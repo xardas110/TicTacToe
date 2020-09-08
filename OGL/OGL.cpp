@@ -9,7 +9,22 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdlib.h>
 #include <stdio.h>
+#include "Application.h"
 
+
+
+int main()
+{
+    Application::Create();
+    {
+        std::shared_ptr<Game> demo = std::make_shared<Game>("Sample", 1920, 1030);
+        Application::Get().Run(demo);
+    }
+    Application::Destroy();
+}
+
+
+/*
 static const struct
 {
     float x, y;
@@ -59,6 +74,7 @@ int main(void)
     GLuint vertex_buffer, vertex_shader, fragment_shader, program;
     GLint mvp_location, vpos_location, vcol_location;
 
+    
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
@@ -66,14 +82,15 @@ int main(void)
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
+    
+    
     window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
-
+  
     glfwSetKeyCallback(window, key_callback);
 
     glfwMakeContextCurrent(window);
@@ -138,3 +155,4 @@ int main(void)
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
+*/
