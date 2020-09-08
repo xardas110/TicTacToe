@@ -1,17 +1,3 @@
-
-#include <iostream>
-#include "glad.h"
-#include <GLFW/glfw3.h>
-#include <glm/vec3.hpp> // glm::vec3
-#include <glm/vec4.hpp> // glm::vec4
-#include <glm/mat4x4.hpp> // glm::mat4
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <stdlib.h>
-#include <stdio.h>
-#include "Application.h"
-
-
 /*
 int main()
 {

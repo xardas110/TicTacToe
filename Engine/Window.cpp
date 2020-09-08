@@ -1,5 +1,6 @@
 #include "Window.h"
-#include <Game.h>
+#include "Game.h"
+
 Window::Window(const std::string& name, int width, int height, int vsync)
 :name(name), width(width), height(height), vSync(vsync)
 {

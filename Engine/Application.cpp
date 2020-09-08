@@ -1,7 +1,8 @@
+#include <Precompiled.h>
 #include "Application.h"
-#include <iostream>
-#include <memory>
 #include <map>
+#include <iostream>
+
 using WindowMap = std::map<std::string, std::shared_ptr<Window>>;
 static Application* gs_S = nullptr;
 WindowMap gs_WinMap{};
@@ -26,12 +27,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	gs_S->callWindow->OnMouseClick();
 }
 
-void Application::Create()
+void Application::Create(std::shared_ptr<Game> g)
 {
 	if (!gs_S)
 	{
 		gs_S = new Application();
-		gs_S->Init();
+		gs_S->Init(g);
 	}
 }
 
@@ -42,12 +43,15 @@ Application& Application::Get()
 
 int Application::Run(std::shared_ptr<Game> g)
 {
-	if (g->Init() != 1) return -1;
-	if (SetGLFWCallback(g->win)!= 1) return -1;
+	//if (g->Init() != 1) return -1;
+	if (SetGLFWCallback(g->win)!= 1) return -2;
+	if (g->OnLoad() != 1) return -3;
 	while (!glfwWindowShouldClose(g->win->GetRenderWindow()))
 	{
 		g->OnUpdate();
-		glfwGetFramebufferSize(g->win->GetRenderWindow(), &g->win->GetWidth(), &g->win->GetHeight());	
+		glfwGetFramebufferSize(g->win->GetRenderWindow(), &g->win->GetWidth(), &g->win->GetHeight());
+		glViewport(0, 0, g->win->GetWidth(), g->win->GetHeight());
+		glClear(GL_COLOR_BUFFER_BIT);
 		g->OnRender();
 		glfwSwapBuffers(g->win->GetRenderWindow());
 		glfwPollEvents();
@@ -86,7 +90,7 @@ void Application::Destroy()
 	exit(EXIT_SUCCESS);
 }
 
-void Application::Init()
+void Application::Init(std::shared_ptr<Game> g)
 {
 	glfwSetErrorCallback(error_callback);
 
@@ -95,4 +99,11 @@ void Application::Init()
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	g->Init();
+	glfwMakeContextCurrent(g->win->GetRenderWindow());
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+	}
+	glfwSwapInterval(1);
 }

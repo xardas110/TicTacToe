@@ -1,8 +1,8 @@
 #pragma once
 #include <Windows.h>
+#include <memory>
 #include <string>
 #include <GLFW/glfw3.h>
-#include <memory>
 class Game;
 class Window : public std::enable_shared_from_this<Window>
 {

@@ -30,6 +30,12 @@
     <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Precompiled.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -42,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Precompiled.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
