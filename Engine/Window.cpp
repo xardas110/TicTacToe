@@ -6,11 +6,19 @@ Window::Window(const std::string& name, int width, int height, int vsync)
 {
 }
 
-void Window::OnKey()
+void Window::OnKeyPressed(KeyEvent& e)
 {
     if (auto pGame = game.lock())
     {
-        pGame->OnKeyPress();
+        pGame->OnKeyPressed(e);
+    }
+}
+
+void Window::OnKeyReleased(KeyEvent& e)
+{
+    if (auto pGame = game.lock())
+    {
+        pGame->OnKeyReleased(e);
     }
 }
 

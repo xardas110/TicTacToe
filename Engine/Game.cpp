@@ -1,8 +1,12 @@
 #include "Game.h"
 
-void Game::OnKeyPress()
+void Game::OnKeyPressed(KeyEvent &e)
 {
 	//printf("Key pressed from game");
+}
+
+void Game::OnKeyReleased(KeyEvent& e)
+{
 }
 
 void Game::OnMouseMove()
@@ -27,7 +31,7 @@ int Game::OnLoad()
 	return 1;
 }
 
-void Game::OnUpdate()
+void Game::OnUpdate(UpdateEvent &e)
 {
 }
 

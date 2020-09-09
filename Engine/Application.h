@@ -9,7 +9,9 @@ private:
 	void Init(std::shared_ptr<Game> g);
 	std::shared_ptr<Window> CreateRenderWindow(const std::string name, int width, int height, bool vsync);
 	int						SetGLFWCallback(std::shared_ptr<Window> w);
-	
+	static double			lastFrame;
+	static double			totalTime;
+	static uint64_t			frameNr;	
 public:
 	static void				Create(std::shared_ptr<Game> g);
 	static					Application& Get();

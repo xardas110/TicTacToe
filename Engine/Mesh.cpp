@@ -127,7 +127,7 @@ std::unique_ptr<Mesh> Mesh::CreateGrid(const unsigned int gridX, const unsigned 
     const auto halfSizeX = (xSize*gridX) * 0.5f;
     const auto halfSizeY = (ySize*gridY) * 0.5f;
 
-    //Gotta add 1 to draw the last line, by default this won't be in the middle, for better calculations
+    //Gotta add 1 to draw the last line
     for (int y = 0, const columnSize = gridX + 1, const rowSize = gridY + 1, f = columnSize, const sum = columnSize * rowSize; y <= gridY; y++, f--)
     { 
         indices.push_back(columnSize * y);

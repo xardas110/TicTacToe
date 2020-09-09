@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <GLFW/glfw3.h>
+#include "Events.h"
 class Game;
 class Window : public std::enable_shared_from_this<Window>
 {
@@ -20,7 +21,8 @@ public:
 	//Window& operator=(Window& reference) = default;
 
 	std::weak_ptr<Game> game;
-	virtual void		OnKey();
+	virtual void		OnKeyPressed(KeyEvent& e);
+	virtual void		OnKeyReleased(KeyEvent& e);
 	virtual void		OnMouseMove();
 	virtual void		OnMouseClick();
 	void				InitGLFW();

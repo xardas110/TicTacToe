@@ -5,6 +5,9 @@
 
 using WindowMap = std::map<std::string, std::shared_ptr<Window>>;
 static Application* gs_S = nullptr;
+double Application::lastFrame = glfwGetTime();
+double Application::totalTime = 0.0;
+uint64_t Application::frameNr = 0ULL;
 WindowMap gs_WinMap{};
 static void error_callback(int error, const char* description)
 {
@@ -12,10 +15,19 @@ static void error_callback(int error, const char* description)
 }
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	gs_S->callWindow->OnKey();
+	if (action == GLFW_PRESS)
+	{
+		if (key == GLFW_KEY_ESCAPE)
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
+		KeyEvent eArgs(key, scancode, (KeyEvent::KeyState)GLFW_PRESS, mods);
+		Application::Get().callWindow->OnKeyPressed(eArgs);
+	}
+	else
+	{
+		KeyEvent eArgs(key, scancode, (KeyEvent::KeyState)GLFW_RELEASE, mods);
+		gs_S->callWindow->OnKeyReleased(eArgs);
+	}
 }
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -48,7 +60,13 @@ int Application::Run(std::shared_ptr<Game> g)
 	if (g->OnLoad() != 1) return -3;
 	while (!glfwWindowShouldClose(g->win->GetRenderWindow()))
 	{
-		g->OnUpdate();
+		const auto currentTime = glfwGetTime();
+		const auto deltaTime = currentTime - Application::lastFrame;		
+		Application::lastFrame = currentTime;
+		Application::totalTime += deltaTime;
+		UpdateEvent e(deltaTime, Application::totalTime, Application::frameNr);
+		g->OnUpdate(e);
+
 		glfwGetFramebufferSize(g->win->GetRenderWindow(), &g->win->GetWidth(), &g->win->GetHeight());
 		glViewport(0, 0, g->win->GetWidth(), g->win->GetHeight());
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0);
@@ -60,6 +78,7 @@ int Application::Run(std::shared_ptr<Game> g)
 		g->OnRender();
 		glfwSwapBuffers(g->win->GetRenderWindow());
 		glfwPollEvents();
+		Application::frameNr++;
 	}
 }
 
