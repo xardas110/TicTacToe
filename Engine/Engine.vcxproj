@@ -155,8 +155,8 @@
     <ClCompile Include="glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="OGL.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="Mesh.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Precompiled.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -174,6 +174,7 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="Precompiled.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Window.h" />

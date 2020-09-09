@@ -51,7 +51,12 @@ int Application::Run(std::shared_ptr<Game> g)
 		g->OnUpdate();
 		glfwGetFramebufferSize(g->win->GetRenderWindow(), &g->win->GetWidth(), &g->win->GetHeight());
 		glViewport(0, 0, g->win->GetWidth(), g->win->GetHeight());
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		g->OnRender();
 		glfwSwapBuffers(g->win->GetRenderWindow());
 		glfwPollEvents();

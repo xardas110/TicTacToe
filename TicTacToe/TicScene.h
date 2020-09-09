@@ -3,6 +3,7 @@
 #include <string>
 #include "../Engine/Shader.h"
 #include <memory>
+#include "../Engine/Mesh.h"
 class TicScene : public Game
 {
 public:
@@ -13,5 +14,6 @@ public:
 
 private:
 	std::shared_ptr<Shader> simpleShader;
+	std::unique_ptr<Mesh> quad;
 };
 

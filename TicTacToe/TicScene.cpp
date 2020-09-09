@@ -8,6 +8,7 @@ TicScene::TicScene(std::string name, int width, int height, bool vSync)
 int TicScene::OnLoad()
 {
 	simpleShader = std::shared_ptr<Shader>(new Shader("Shaders/Box.vs", "Shaders/Box.fs"));
+	quad = Mesh::CreateGrid(3, 3, 0.4f, 0.4f);
 	simpleShader->Use();
 	return 1;
 }
@@ -15,5 +16,5 @@ int TicScene::OnLoad()
 void TicScene::OnRender()
 {
 	simpleShader->Use();
-	glDrawArrays(GL_QUAD_STRIP, 0, 3);
+	quad->Draw(GL_LINES);
 }
