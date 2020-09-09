@@ -23,7 +23,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		KeyEvent eArgs(key, scancode, (KeyEvent::KeyState)GLFW_PRESS, mods);
 		Application::Get().callWindow->OnKeyPressed(eArgs);
 	}
-	else
+	else if (action == GLFW_RELEASE)
 	{
 		KeyEvent eArgs(key, scancode, (KeyEvent::KeyState)GLFW_RELEASE, mods);
 		gs_S->callWindow->OnKeyReleased(eArgs);

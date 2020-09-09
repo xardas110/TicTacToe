@@ -22,7 +22,7 @@ void Camera::SetProjection(float fov, float aspect, float near, float far)
 
 void Camera::SetTranslate(glm::vec3 trans)
 {
-	translate = trans;
+	translate += trans;
 	view = glm::translate(view, trans);
 }
 

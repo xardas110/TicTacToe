@@ -52,8 +52,12 @@ void TicScene::OnKeyReleased(KeyEvent& e)
 
 void TicScene::OnUpdate(UpdateEvent& e)
 {
-	//std::cout << e.deltaTime << std::endl;
 	camera.UpdatePosition(e);
+	RayCast ray(camera.GetPosition(), glm::vec3(0.f, 0.f, -1.f));
+	if (ray.Intersect(box))
+	{ 
+		std::cout << "Intersect" << std::endl;
+	}
 }
 
 int TicScene::OnLoad()
@@ -68,10 +72,10 @@ int TicScene::OnLoad()
 }
 
 void TicScene::OnRender()
-{
-	
+{	
 	glm::mat4 model(1.f);
 	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+	box.SetExtents(glm::vec3(0.1f, 0.1f, 0.1f));
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 project = camera.GetProjectionMatrix();
 	glm::mat4 MVP =  project * view * model;
