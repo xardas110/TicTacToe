@@ -9,12 +9,12 @@ void Game::OnKeyReleased(KeyEvent& e)
 {
 }
 
-void Game::OnMouseMove()
+void Game::OnMouseMove(MouseMoveEvent& e)
 {
 	////printf("On Mouse move from game");
 }
 
-void Game::OnMouseClick()
+void Game::OnMouseClick(MouseClickEvent& e)
 {
 	//printf("Mouse clicked inside game");
 }

@@ -7,20 +7,20 @@
 class Game : public std::enable_shared_from_this<Game>
 {
 private:
-	std::string name;
-	int width, height, vSync;
+	std::string				name;
+	int						width, height, vSync;
 	
 public:
-	std::shared_ptr<Window> win;
-	virtual int  Init();
 	Game(const std::string& name, int width, int height);
-	virtual int  OnLoad();
-	virtual void OnUpdate(UpdateEvent& e);
-	virtual void OnRender();
-	virtual void OnKeyPressed(KeyEvent &e);
-	virtual void OnKeyReleased(KeyEvent& e);
-	virtual void OnMouseMove();
-	virtual void OnMouseClick();
+	std::shared_ptr<Window> win;
+	virtual int				Init();	
+	virtual int				OnLoad();
+	virtual void			OnUpdate(UpdateEvent& e);
+	virtual void			OnRender();
+	virtual void			OnKeyPressed(KeyEvent &e);
+	virtual void			OnKeyReleased(KeyEvent& e);
+	virtual void			OnMouseMove(MouseMoveEvent& e);
+	virtual void			OnMouseClick(MouseClickEvent& e);
 protected:
 	
 };

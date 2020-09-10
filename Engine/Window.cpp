@@ -8,30 +8,30 @@ Window::Window(const std::string& name, int width, int height, int vsync)
 
 void Window::OnKeyPressed(KeyEvent& e)
 {
-    if (auto pGame = game.lock())
+    if (auto Game = game.lock())
     {
-        pGame->OnKeyPressed(e);
+        Game->OnKeyPressed(e);
     }
 }
 
 void Window::OnKeyReleased(KeyEvent& e)
 {
-    if (auto pGame = game.lock())
+    if (auto Game = game.lock())
     {
-        pGame->OnKeyReleased(e);
+        Game->OnKeyReleased(e);
     }
 }
 
-void Window::OnMouseMove()
+void Window::OnMouseMove(MouseMoveEvent& e)
 {
-    if (auto pGame = game.lock())
-        pGame->OnMouseMove();
+    if (auto Game = game.lock())
+        Game->OnMouseMove(e);
 }
 
-void Window::OnMouseClick()
+void Window::OnMouseClick(MouseClickEvent& e)
 {
-    if (auto pGame = game.lock())
-        pGame->OnMouseClick();
+    if (auto Game = game.lock())
+        Game->OnMouseClick(e);
 }
 
 void Window::InitGLFW()

@@ -23,7 +23,7 @@ void Camera::SetProjection(float fov, float aspect, float near, float far)
 void Camera::SetTranslate(glm::vec3 trans)
 {
 	translate += trans;
-	view = glm::translate(view, trans);
+	view = glm::translate(view, -trans);
 }
 
 const glm::vec3 Camera::GetPosition() const
@@ -46,9 +46,9 @@ void Camera::AddVelocityZ(const float z)
 	velocity.z = z;
 }
 
-void Camera::UpdatePosition(UpdateEvent& e)
+void Camera::UpdatePosition(const double& deltaTime)
 {
-	SetTranslate(velocity * (float)-e.deltaTime);
+	SetTranslate(velocity * (float)deltaTime);
 }
 
 const glm::mat4 Camera::GetViewMatrix() const

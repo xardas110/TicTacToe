@@ -76,7 +76,7 @@ std::unique_ptr<Mesh> Mesh::CreateCircle(const unsigned int vertCount, const flo
     std::vector<Vertex> circleVert;//Would be better to use static arrays for better performance, could be a TODO for another time, probably not a huge performance difference either
     std::vector<unsigned int> indices;
     //Lets calculate radians pr vertex
-    float radPrVert = (2.f * (float)PI) / (float)vertCount;
+    const float radPrVert = (2.f * (float)PI) / (float)vertCount;
     //std::cout << "Rad pr vertex: " << radPrVert << std::endl;
     //Circle centre
     circleVert.push_back(Vertex(glm::vec3(0.f, 0.f, 0.f)));

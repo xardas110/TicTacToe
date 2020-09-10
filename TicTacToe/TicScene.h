@@ -17,6 +17,8 @@ public:
 	virtual void OnKeyPressed(KeyEvent& e) override;
 	virtual void OnKeyReleased(KeyEvent& e) override;
 	virtual void OnUpdate(UpdateEvent& e) override;
+	virtual void OnMouseMove(MouseMoveEvent& e) override;
+	virtual void OnMouseClick(MouseClickEvent& e) override;
 	virtual int	 OnLoad() override;
 	virtual void OnRender() override;
 
@@ -25,5 +27,6 @@ private:
 	std::unique_ptr<Mesh> quad;
 	Bounding::Box box;
 	Camera camera;
+	float mX, mY;
 };
 

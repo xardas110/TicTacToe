@@ -2,13 +2,13 @@
 
 void _vectorcall Bounding::Box::SetCenter(glm::vec3 pos)
 {
-	Center = _mm_load_ps(&pos.x);
+	Center = _mm_set_ps(0.f, pos.z, pos.y, pos.x);
 	UpdateBounds();
 }
 
 void _vectorcall Bounding::Box::SetExtents(glm::vec3 scale)
 {
-	Extents = _mm_load_ps(&scale.x);
+	Extents = _mm_set_ps(0.f, scale.z*0.5f, scale.y*0.5f, scale.x*0.5f);
 	UpdateBounds();
 }
 

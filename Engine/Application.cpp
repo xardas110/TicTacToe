@@ -31,12 +31,14 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	gs_S->callWindow->OnMouseMove();
+	MouseMoveEvent e(xpos, ypos);
+	gs_S->callWindow->OnMouseMove(e);
 };
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	gs_S->callWindow->OnMouseClick();
+	MouseClickEvent e(button, action, mods);
+	gs_S->callWindow->OnMouseClick(e);
 }
 
 void Application::Create(std::shared_ptr<Game> g)
@@ -61,9 +63,11 @@ int Application::Run(std::shared_ptr<Game> g)
 	while (!glfwWindowShouldClose(g->win->GetRenderWindow()))
 	{
 		const auto currentTime = glfwGetTime();
-		const auto deltaTime = currentTime - Application::lastFrame;		
-		Application::lastFrame = currentTime;
+		const auto deltaTime = currentTime - Application::lastFrame;	
+
 		Application::totalTime += deltaTime;
+		Application::lastFrame = currentTime;
+		
 		UpdateEvent e(deltaTime, Application::totalTime, Application::frameNr);
 		g->OnUpdate(e);
 
@@ -71,7 +75,7 @@ int Application::Run(std::shared_ptr<Game> g)
 		glViewport(0, 0, g->win->GetWidth(), g->win->GetHeight());
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
 		//glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

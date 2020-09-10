@@ -4,7 +4,7 @@ class KeyEvent
 public:
 	enum class KeyState
 	{
-		Released, Pressed
+		Released, Pressed, Repeated
 	};
 	int key, scancode, mods;
 	KeyState state;
@@ -22,4 +22,35 @@ public:
 	double deltaTime;
 	double totalTime;
 	uint64_t frameNr;
+};
+
+class MouseMoveEvent
+{
+public:
+	MouseMoveEvent(double xpos, double ypos)
+		:xPos(xpos), yPos(ypos)
+	{}
+	double xPos, yPos;
+};
+
+class MouseClickEvent
+{
+public:
+	enum class ButtonState : int
+	{
+		Released,
+		Pressed
+	};
+	enum class Button : int
+	{
+		Left,
+		Right,
+		Middle
+	};
+	MouseClickEvent(int button, int action, int mods)
+		:button((Button)button), state((ButtonState)action), mods(mods)
+	{}
+	Button button;
+	ButtonState state;	
+	int mods;
 };

@@ -180,6 +180,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="BoundingShapes.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="Mesh.h" />

@@ -21,17 +21,23 @@
     <ClCompile Include="TicScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Board.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TicScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Board.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Box.fs">
+    <None Include="Shaders\Primitives.vs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Shaders\Box.vs">
+    <None Include="Shaders\Primitives.fs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

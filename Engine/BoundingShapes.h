@@ -19,12 +19,12 @@ namespace Bounding
 		{
 			UpdateBounds();
 		}
-		__m128 Center;
-		__m128 Extents;
-		__m128 Bounds[2U];
+		__m128				Center;
+		__m128				Extents;
+		__m128				Bounds[2U];
 
-		void _vectorcall SetCenter(_In_ glm::vec3 pos);
-		void _vectorcall SetExtents(_In_ glm::vec3 pos);
-		void _vectorcall UpdateBounds();
+		void _vectorcall	SetCenter(_In_ glm::vec3 pos);
+		void _vectorcall	SetExtents(_In_ glm::vec3 pos);
+		void _vectorcall	UpdateBounds();
 	};
 }

@@ -1,4 +1,3 @@
-#include <iostream>
 #include "../Engine/Application.h"
 #include "TicScene.h"
 

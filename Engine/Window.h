@@ -23,8 +23,8 @@ public:
 	std::weak_ptr<Game> game;
 	virtual void		OnKeyPressed(KeyEvent& e);
 	virtual void		OnKeyReleased(KeyEvent& e);
-	virtual void		OnMouseMove();
-	virtual void		OnMouseClick();
+	virtual void		OnMouseMove(MouseMoveEvent& e);
+	virtual void		OnMouseClick(MouseClickEvent& e);
 	void				InitGLFW();
 	HWND				GetHWND() const;
 	GLFWwindow*			GetRenderWindow() const;

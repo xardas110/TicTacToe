@@ -143,15 +143,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Board.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TicScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Board.h" />
     <ClInclude Include="TicScene.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Box.fs" />
-    <None Include="Shaders\Box.vs" />
+    <None Include="Shaders\Primitives.fs" />
+    <None Include="Shaders\Primitives.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
