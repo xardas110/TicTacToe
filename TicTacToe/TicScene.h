@@ -8,6 +8,7 @@
 #include "../Engine/Events.h"
 #include "../Engine/BoundingShapes.h"
 #include "../Engine/Raycast.h"
+#include "Board.h"
 
 class TicScene : public Game
 {
@@ -24,9 +25,8 @@ public:
 
 private:
 	std::shared_ptr<Shader> simpleShader;
-	std::unique_ptr<Mesh> quad;
-	Bounding::Box box;
 	Camera camera;
 	float mX, mY;
+	Board board;
 };
 

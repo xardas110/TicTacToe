@@ -1,6 +1,9 @@
 #pragma once
 #include "../include/glm/glm.hpp"
+#include "../include/glm/gtc/matrix_transform.hpp"
 #include "../Engine/Mesh.h"
+#include "../Engine/BoundingShapes.h"
+#include "../Engine/Shader.h"
 #include <memory>
 #include <xmmintrin.h>
 #include <vector>
@@ -13,34 +16,50 @@ public:
 	{
 		PlayerO,
 		PlayerX,
-		Open = -1,
 		Size
-	}currentPlayerTurn; //-> O always start
+	}; //-> O always start
 	enum GameState
 	{
-		WinnerO = Player::PlayerO,
-		WinnerX = Player::PlayerX,
-		NoWinner = -1
+		OnGoing,
+		Finished //by default the winner will be the guy who did thelast turn
 	};
+	enum TileState
+	{
+		Taken,
+		Open = -1,
+		NotYourTurn,
+		OutSideBounds,
+		Success
+	};
+
+	TileState SetTile(glm::vec3 posWS, Player player);	
+	void SetTranslate(glm::vec3 translate);
+	void SetScale(glm::vec3 scale);
+	const Bounding::Box GetBoundingBox() const;
+	const glm::mat4 &GetWorldSpace();
+	
+	void Draw(std::shared_ptr<Shader> shader, glm::mat4 projview);
+	void Init();
+	
 private:
+	Player currentPlayerTurn = Player::PlayerO;
+	GameState gameState = GameState::OnGoing;
+	void SetPlayerTurn(Player player);
 	const int gridLengthX;
-	const int gridLengthY;
+	const int gridLengthY; //All these positions are done inside board space,and they will be constants for tictactoe, 3*3 tiles and gridsize is 1, for fastest possible array access
 	const float gridSizeX;
 	const float gridSizeY;
-	int playerOScale;
-	int playerXScale;
-	glm::vec3 transation;
+	std::vector<glm::vec3> playerDrawList[2];
+	std::unique_ptr<Mesh> playerMesh[Player::Size];
+	glm::vec3 playerColor[Player::Size];
 	std::unique_ptr<Mesh> grid;
-	std::unique_ptr<Mesh> playerO;
-	std::unique_ptr<Mesh> playerX; // will just use a quad for now for this, after logic is done I will make it a x or something cool
-	__m128 tiles[3]; //Will use SIMD instructions for best performance
+	__m128i tiles[3];
+	glm::vec3 GetTileCentrePositionWS(const int x, const int y);
+	Bounding::Box BB; //Bounding box that will be the board;
+//inverse world gives me localspace
+	glm::mat4 worldSpace, inverseWorld; //keeping everything in 3d calculations just in case I want to make this 3d instead, with intel SIMD instructions will basically be as good optimized as single instructions anyways -> TODO for a later date
+	glm::mat4 boardSpace, inverseBoard; //for optimized grid calculations, top left 0, 0 - bot right gridX-1.f, gridY-1.f for fast array access
+	TileState IsTileTaken(const int x, const int y);
 
-public:
-	GameState		CheckForWinner();
-	glm::vec3		GetTileCentrePosition(const int x, const int y);
-	glm::vec3		GetTileCentrePosition(glm::vec3 xy);
-	glm::vec3		TranslateToBoardSpace(glm::vec3 posWS);
-	bool			SetTile(const int x, const int y, Player player);
-	Player			IsTileTaken(const int x, const int y);
 };
 

@@ -24,7 +24,7 @@ const unsigned int Mesh::GetNumTriangles() const
     return indexCount / 3;
 }
 
-void Mesh::Draw(GLenum mode)
+void Mesh::Draw(unsigned int mode)
 {
     glBindVertexArray(ID);
     glDrawElements(mode, indexCount, GL_UNSIGNED_INT, 0);
