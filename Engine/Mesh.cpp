@@ -7,10 +7,10 @@
 #define PI 3.14159265
 struct Vertex
 {
-    Vertex(glm::vec3 p)
-        :p(p) {}
+    Vertex(glm::vec3 p, glm::vec3 norm)
+        :p(p),n(norm) {}
     glm::vec3 p;
-    //vertColor
+    glm::vec3 n;
     //textureCoords can be added later, that's why I use a struct
 };
 
@@ -37,10 +37,10 @@ std::unique_ptr<Mesh> Mesh::CreateQuad(const unsigned int size)
     std::vector<Vertex> quadVert;
 
     const auto s = size * 0.5f;
-    quadVert.push_back(Vertex({ s, s, 0.f }));
-    quadVert.push_back(Vertex({ s, -s, 0.f }));
-    quadVert.push_back(Vertex({ -s, -s, 0.f }));
-    quadVert.push_back(Vertex({ -s, s, 0.f }));
+    quadVert.push_back(Vertex({ s, s, 0.f }, { 0.f, 0.f, 1.f }));
+    quadVert.push_back(Vertex({ s, -s, 0.f }, { 0.f, 0.f, 1.f }));
+    quadVert.push_back(Vertex({ -s, -s, 0.f }, { 0.f, 0.f, 1.f }));
+    quadVert.push_back(Vertex({ -s, s, 0.f }, { 0.f, 0.f, 1.f }));
 
     unsigned int indices[] =
     {
@@ -79,18 +79,18 @@ std::unique_ptr<Mesh> Mesh::CreateCircle(const unsigned int vertCount, const flo
     const float radPrVert = (2.f * (float)PI) / (float)vertCount;
     //std::cout << "Rad pr vertex: " << radPrVert << std::endl;
     //Circle centre
-    circleVert.push_back(Vertex(glm::vec3(0.f, 0.f, 0.f)));
+    circleVert.push_back(Vertex(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
     for (unsigned int i = 1, j = 2; i < vertCount; i++, j++)
     {      
         //I have to invert cos because I need to do a clockwise order to discard all back faces
-        Vertex temp({ -cosf(radPrVert * (float)i) * radius, sinf(radPrVert * (float)i) * radius, 0.f });
+        Vertex temp({ -cosf(radPrVert * (float)i) * radius, sinf(radPrVert * (float)i) * radius, 0.f }, glm::vec3(0.f, 0.f, 1.f));
         circleVert.push_back(temp); 
         indices.push_back(0U);
         indices.push_back(i);
         indices.push_back(j);
     }
     //For the last triangle, goes from the last vertex count back to 1, this is as optimized as it can be I think, however there might be a way to get everything inside the loop, but w.e doesn't really matter, I wont get better performance by doing that
-    Vertex temp({ -cosf(radPrVert * (float)vertCount) * radius, sinf(radPrVert * (float)vertCount) * radius, 0.f });
+    Vertex temp({ -cosf(radPrVert * (float)vertCount) * radius, sinf(radPrVert * (float)vertCount) * radius, 0.f }, glm::vec3(0.f, 0.f, 1.f));
     circleVert.push_back(temp);
     indices.push_back(0);
     indices.push_back(circleVert.size() - 1);
@@ -138,7 +138,7 @@ std::unique_ptr<Mesh> Mesh::CreateGrid(const unsigned int gridX, const unsigned 
         {        
             const auto xPos = ((float)x * xSize) - halfSizeX;
             const auto yPos = ((float)y * ySize) - halfSizeY;
-            gridVert.push_back(Vertex({ xPos, yPos, 0.f }));
+            gridVert.push_back(Vertex({ xPos, yPos, 0.f }, glm::vec3(0.f, 0.f, 1.f)));
         }
     }
 
@@ -156,6 +156,8 @@ std::unique_ptr<Mesh> Mesh::CreateGrid(const unsigned int gridX, const unsigned 
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)NULL);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(Vertex), (void*)offsetof(Vertex, n));
     glBindVertexArray(0);
 
     std::unique_ptr<Mesh> mesh(new Mesh(VAO, indices.size()));

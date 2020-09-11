@@ -1,11 +1,19 @@
 #include "Board.h"
 #include <iostream>
 #include "../Engine/Debug.h"
-
+#include <immintrin.h>
 Board::Board()
-	:worldSpace(glm::mat4(1.f)), inverseWorld(glm::mat4(1.f)), boardSpace(glm::mat4(1.f)), inverseBoard(glm::mat4(1.f)), gridLengthX(3), gridLengthY(3), gridSizeX(1.f), gridSizeY(1.f), tiles{-1}
+	:worldSpace(glm::mat4(1.f)), inverseWorld(glm::mat4(1.f)), boardSpace(glm::mat4(1.f)), inverseBoard(glm::mat4(1.f)), gridLengthX(3), gridLengthY(3), gridSizeX(1.f), gridSizeY(1.f), tiles{-1}, playerScaleX(0.6f), playerScaleY(0.6f)
 {
-	memset(tiles, -1, sizeof(__m128i)* _countof(tiles));
+	//Only 64 bit support
+	boardCombinations.push_back(_mm256_setr_epi64x((__int64)&tiles[0].m128i_i32[0], (__int64)&tiles[1].m128i_i32[1], (__int64)&tiles[2].m128i_i32[2], (__int64)&tiles[3].m128i_i32[3]));
+	boardCombinations.push_back(_mm256_setr_epi64x((__int64)&tiles[0].m128i_i32[3], (__int64)&tiles[1].m128i_i32[2], (__int64)&tiles[1].m128i_i32[1], (__int64)&tiles[3].m128i_i32[0]));
+	for (int i = 0; i < _countof(tiles); i++)
+	{ 
+		tiles[i] = _mm_set1_epi32(TileState::Open);
+		boardCombinations.push_back(_mm256_setr_epi64x((__int64)&tiles[i].m128i_i32[0], (__int64)&tiles[i].m128i_i32[1], (__int64)&tiles[i].m128i_i32[2], (__int64)&tiles[i].m128i_i32[3]));
+		boardCombinations.push_back(_mm256_setr_epi64x((__int64)&tiles[0].m128i_i32[i], (__int64)&tiles[1].m128i_i32[i], (__int64)&tiles[2].m128i_i32[i], (__int64)&tiles[3].m128i_i32[i]));
+	}
 	BB.SetExtents(glm::vec3(gridLengthX, gridLengthY, 0.f));
 	const auto gridXHalf = (gridLengthX * gridSizeX) * 0.5f;
 	const auto gridYHalf = (gridLengthY * gridSizeY) * 0.5f;
@@ -15,6 +23,8 @@ Board::Board()
 
 Board::TileState Board::SetTile(glm::vec3 posWS, Player player)
 {
+	if (winnerState != WinnerState::NoWinner)
+		return TileState::NotYourTurn;
 	if (player != currentPlayerTurn)
 		return TileState::NotYourTurn;
 
@@ -36,6 +46,7 @@ Board::TileState Board::SetTile(glm::vec3 posWS, Player player)
 	tiles[floorY].m128i_i32[floorX] = player;
 	playerDrawList[player].push_back(GetTileCentrePositionWS(floorX, floorY));
 	//check winner, if no winner set player turn, dont set player turn before checking for a winner, cuz of optimization reasons
+	winnerState = CheckWinner(player);
 	SetPlayerTurn(player);
 
 	return TileState::Success;
@@ -55,7 +66,7 @@ void Board::SetTranslate(glm::vec3 translate)
 	worldSpace = glm::translate(worldSpace, translate);
 	inverseWorld = glm::inverse(worldSpace);
 	BB.SetCenter(worldSpace[3]);
-	PrintVector(BB.Extents);
+	//PrintVector(BB.Extents);
 }
 
 void Board::SetScale(glm::vec3 scale)
@@ -64,6 +75,8 @@ void Board::SetScale(glm::vec3 scale)
 	inverseWorld = glm::inverse(worldSpace);
 	const auto totalScale = glm::vec3(worldSpace[0][0], worldSpace[1][1], worldSpace[2][2]);
 	BB.SetExtents(totalScale * glm::vec3(gridLengthX, gridLengthY, 0.f)); // haven't added a better function inside my bounding class, will do this later if I get time
+	playerScaleX *= totalScale.x;
+	playerScaleY *= totalScale.y;
 }
 
 const Bounding::Box Board::GetBoundingBox() const
@@ -80,15 +93,15 @@ void Board::Draw(std::shared_ptr<Shader> shader, glm::mat4 projView)
 {
 	shader->BindVec3("color", glm::vec3(1.f, 1.f, 1.f));
 	grid->Draw(0x0001);//draw lines
-
 	
-	for (int j = 0; j< _countof(playerDrawList); j++)
+	for (int j = 0; j < _countof(playerDrawList); j++)
 	{ 
 		shader->BindVec3("color", playerColor[j]);
 		for (int i = 0; i < playerDrawList[j].size(); i++)
 		{
 			auto model = glm::mat4(1.f);
 			model = glm::translate(model, playerDrawList[j][i]);
+			model = glm::scale(model, glm::vec3(playerScaleX, playerScaleY, 1.f));
 			shader->BindMat4("MVP", projView * model);
 			playerMesh[j]->Draw();
 		}
@@ -105,6 +118,25 @@ void Board::Init()
 	playerColor[Player::PlayerX] = glm::vec3(1.f, 0.f, 0.f);
 }
 
+Board::WinnerState Board::CheckWinner(Player player)
+{
+	//time for some simd functions
+	__m128i mask1 = _mm_set1_epi32(player);
+	for (int i = 0; i < boardCombinations.size(); i++)
+	{		
+		auto currentTile = _mm_setr_epi32(*(int*)boardCombinations[i].m256i_i64[0], *(int*)boardCombinations[i].m256i_i64[1], *(int*)boardCombinations[i].m256i_i64[2], *(int*)boardCombinations[i].m256i_i64[3]);
+		const auto cmp = _mm_cmpeq_epi32(mask1, currentTile);
+		const auto mask = _mm_movemask_epi8(cmp);
+		if (((mask & 0xFFF) == 0xFFF))
+		{ 
+			std::cout << "Player " << player << " won" << std::endl;
+			return (WinnerState)player;
+		}
+
+	}
+	return WinnerState::NoWinner;
+}
+
 void Board::SetPlayerTurn(Player player)
 {
 	if (player == Player::PlayerO)
@@ -115,7 +147,7 @@ void Board::SetPlayerTurn(Player player)
 
 glm::vec3 Board::GetTileCentrePositionWS(const int x, const int y)
 {	
-	auto const xCentre = (float)x + gridSizeX * 0.5;
+	auto const xCentre = (float)x + gridSizeX * 0.5f;
 	const auto yCentre = (float)y + gridSizeY * 0.5f;
 	auto tileCentreWS = glm::vec4(xCentre, (((float)gridLengthY*gridSizeY)) - yCentre, 0.f, 1.f);
 	tileCentreWS = inverseBoard * tileCentreWS;

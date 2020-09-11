@@ -110,8 +110,8 @@ int TicScene::OnLoad()
 	simpleShader = std::shared_ptr<Shader>(new Shader("Shaders/Primitives.vs", "Shaders/Primitives.fs"));
 	board.Init();
 	simpleShader->Use();
-	//board.SetTranslate(glm::vec3(1.f, 1.f, 0.f));
-	//board.SetScale(glm::vec3(2.f, 2.f, 1.f)); //TODO add player scaling to fit this
+	board.SetTranslate(glm::vec3(1.f, 1.f, 0.f));
+	board.SetScale(glm::vec3(0.5f, 0.5f, 1.f)); //TODO add player scaling to fit this
 	return 1;
 }
 
