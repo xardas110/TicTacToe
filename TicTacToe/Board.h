@@ -7,6 +7,7 @@
 #include <memory>
 #include <xmmintrin.h>
 #include <vector>
+#include <map>
 
 class Board
 {
@@ -39,6 +40,7 @@ public:
 
 
 	TileState SetTile(glm::vec3 posWS, Player player);	
+	TileState SetTile(int x, int y, Player player);
 	void SetTranslate(glm::vec3 translate);
 	void SetScale(glm::vec3 scale);
 	const Bounding::Box GetBoundingBox() const;
@@ -51,8 +53,9 @@ private:
 	Player currentPlayerTurn = Player::PlayerO;
 	GameState gameState = GameState::OnGoing;
 	WinnerState winnerState = WinnerState::NoWinner;
-	WinnerState _vectorcall CheckWinner(Player player);
-	void SetPlayerTurn(Player player);
+	WinnerState _vectorcall CheckWinner(glm::vec<2, int> pos, Player player);
+	void AICalculateTurn(std::map<int, glm::vec<3, int>> priorityMap);
+	void SetNextPlayerTurn(Player currentPlayer);
 	const int gridLengthX;
 	const int gridLengthY; //All these positions are done inside board space,and they will be constants for tictactoe, 3*3 tiles and gridsize is 1, for fastest possible array access
 	float playerScaleX, playerScaleY;
@@ -62,8 +65,7 @@ private:
 	std::unique_ptr<Mesh> playerMesh[Player::Size];
 	glm::vec3 playerColor[Player::Size];
 	std::unique_ptr<Mesh> grid;
-	 __m128i tiles[4];// would be simpler to have a matrix class for this datatype
-	 std::vector<__m256i> boardCombinations;
+	glm::mat<3,3, int> tiles;// would be simpler to have a matrix class for this datatype
 	glm::vec3 GetTileCentrePositionWS(const int x, const int y);
 	Bounding::Box BB; //Bounding box that will be the board;
 //inverse world gives me localspace
