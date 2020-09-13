@@ -41,10 +41,8 @@ Board::TileState Board::SetTile(glm::vec3 posWS, Player player)
 	std::cout << "Turn accepted" << std::endl;
 	tiles[floorY][floorX] = player;
 	playerDrawList[player].push_back(GetTileCentrePositionWS(floorX, floorY));
-	SetNextPlayerTurn(player);
 	winnerState = CheckWinner(glm::vec<2, int>(floorX, floorY), player);
 	
-
 	return TileState::Success;
 }
 
@@ -65,7 +63,6 @@ Board::TileState Board::SetTile(int x, int y, Player player)
 	std::cout << "Turn accepted" << std::endl;
 	tiles[y][x] = player;
 	playerDrawList[player].push_back(GetTileCentrePositionWS(x, y));
-	SetNextPlayerTurn(player);
 	winnerState = CheckWinner(glm::vec<2, int>(x, y), player);
 	
 
@@ -140,7 +137,7 @@ void Board::Init()
 
 Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 {
-
+	//Looks like this isn't optimized cuz of lots of code, but it only uses a few instructions for everything
 	using vec2 = glm::vec<2, int>;
 	using vec4 = glm::vec<4, __int64>; //w will be used as open tiles for the ai, byte 1 = tile0.x, byte2 = tile0.y, byte 3 = tile1.x, byte 4 = tile1.y
 	using mat3 = glm::mat<3, 3, int>;
@@ -200,7 +197,7 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 		break;
 		case -3: //00-3=-3
 		{
-			priorityMap[0] = r[i];
+			priorityMap[1] = r[i];
 			std::cout << "//00-3=-3 player o is about to win" << std::endl;
 		}
 		break;
@@ -224,12 +221,13 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 		}
 	}
 
-	
+	SetNextPlayerTurn(player);
 	for (auto &pM : priorityMap)
 	{ 
 		auto a = pM.second.w;
 		char* p = (char*)a;
 		TileState sate;
+		//const auto sum = tiles[p[0]][p[1]] + tiles[p[2]][p[3]] + tiles[p[4]][p[5]];
 		sate = SetTile(p[3], p[2], Player::PlayerX);
 		std::cout << "state 1: " << sate << std::endl;
 		if (sate == TileState::Taken)
