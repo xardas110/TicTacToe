@@ -152,34 +152,34 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 
 	//priority map for AI
 	//row combinations
-	std::vector<tileInfo> tInfo;//2 instructions
+	std::vector<TileInfo> tInfo;//2 instructions
 	//inserting tile x,y locations inside a bytebuffer
-	tileInfo r0, r1, r2, r3, r4;
+	TileInfo r0, r1, r2, r3, r4;
 	r0.r = vec3(tiles[pos.y][0], tiles[pos.y][1], tiles[pos.y][2]);
 	r1.r = vec3(tiles[0][pos.x], tiles[1][pos.x], tiles[2][pos.x]);
 
-	r0.tilePos[0] = vec2(pos.y, 0);
-	r0.tilePos[1] = vec2(pos.y, 1);
+	r0.tilePos[1] = vec2(pos.y, 0);
+	r0.tilePos[0] = vec2(pos.y, 1);
 	r0.tilePos[2] = vec2(pos.y, 2);
-	r1.tilePos[0] = vec2(0, pos.x);
-	r1.tilePos[1] = vec2(1, pos.x);
+	r1.tilePos[1] = vec2(0, pos.x);
+	r1.tilePos[0] = vec2(1, pos.x);
 	r1.tilePos[2] = vec2(2, pos.x);
 	tInfo.push_back(r0);
 	tInfo.push_back(r1);
+
 	const int sum = pos.y - pos.x;
-	
 	if (sum != 1 and sum != -1)
 	{
 		if (pos.x == 1 && pos.y == 1) //4 combinations if its in the middle
 		{
 			r2.r = vec3(tiles[0][2], tiles[2][0], tiles[1][1]);
 			r3.r = vec3(tiles[0][0], tiles[2][2], tiles[1][1]);
-			r2.tilePos[0] = vec2(0, 2);
+			r2.tilePos[2] = vec2(0, 2);
 			r2.tilePos[1] = vec2(2, 0);
-			r2.tilePos[2] = vec2(1, 1);
-			r3.tilePos[0] = vec2(0, 0);
+			r2.tilePos[0] = vec2(1, 1);
+			r3.tilePos[2] = vec2(0, 0);
 			r3.tilePos[1] = vec2(2, 2);
-			r3.tilePos[2] = vec2(1, 1);
+			r3.tilePos[0] = vec2(1, 1);
 			tInfo.push_back(r2);
 			tInfo.push_back(r3);
 		}
@@ -187,8 +187,8 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 			vec2 temp(2 - pos.x, 2 - pos.y);
 			vec2 temp1 = (temp + pos) / 2; //change to multiplication cuz division requires more cycles
 			r4.r = vec3(tiles[temp.y][temp.x], tiles[temp1.y][temp1.x], tiles[pos.y][pos.x]);
-			r4.tilePos[0] = vec2(temp.y, temp.x);
-			r4.tilePos[1] = vec2(temp1.y, temp1.x);
+			r4.tilePos[1] = vec2(temp.y, temp.x);
+			r4.tilePos[0] = vec2(temp1.y, temp1.x);
 			r4.tilePos[2] = vec2(pos.y, pos.x);
 			tInfo.push_back(r4);
 		}
@@ -197,7 +197,6 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 	for (int i = 0; i < tInfo.size(); i++) //max size for r is 4, but usually at 2-3
 	{
 		const auto rSum = tInfo[i].r.x + tInfo[i].r.y + tInfo[i].r.z;
-		std::cout << "row sum: " << rSum << std::endl;
 		switch (rSum)
 		{
 			case 0:
@@ -215,41 +214,24 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 			}
 		}
 	}
-	Ai.CalculatePriorityMap(tInfo);
+	Ai.CalculatePriorityMap(tInfo, tiles);
 	SetNextPlayerTurn(player);
 	return WinnerState::NoWinner;
-
 }
 
 void Board::AISetTurn()
 {
 	for (auto& pM : Ai.priorityMap)
 	{
-		std::cout << "Priority map priorities: " << pM.first << std::endl;
-		TileState sate;
-		auto const x0 = pM.second.tilePos[1].x;
-		auto const y0 = pM.second.tilePos[1].y;
-		sate = SetTile(y0, x0, (Player)Ai.aiSide);
-		std::cout << "state 1: " << sate << std::endl;
-		if (sate != TileState::Success)
+		
+		for (int i = 0; i < _countof(pM.second.tilePos); i++)
 		{
-			auto const x1 = pM.second.tilePos[0].x;
-			auto const y1 = pM.second.tilePos[0].y;
-			sate = SetTile(y1, x1, (Player)Ai.aiSide);
-			std::cout << "state 2: " << sate << std::endl;
-			if (sate != TileState::Success)
-			{
-				auto const x2 = pM.second.tilePos[2].x;
-				auto const y2 = pM.second.tilePos[2].y;
-				sate = SetTile(y2, x2, (Player)Ai.aiSide);
-				std::cout << "state 3: " << sate << std::endl;
-			}
-			else
+			auto const x = pM.second.tilePos[i].x;
+			auto const y = pM.second.tilePos[i].y;
+			if (SetTile(y, x, (Player)Ai.aiSide) == TileState::Success)
 				return;
 		}
-		else
-			return;
-		std::cout << sate << std::endl;
+
 	}
 
 }

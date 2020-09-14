@@ -84,7 +84,7 @@ void TicScene::OnMouseClick(MouseClickEvent& e)
 		auto inverseProj = glm::inverse(camera.GetProjectionMatrix());
 
 		//std::cout << xHN << " " << yHN << std::endl;
-		glm::vec4 hn(xHN, yHN, -1.f, 1.f); //z = -1.f because in openGL -z is forward by default
+		glm::vec4 hn(xHN, yHN, -1.f, 1.f); //z = -1.f because in openGL uses a RH coordinate system
 		glm::vec4 rayClip = inverseProj * hn;
 		rayClip = glm::vec4(rayClip.x, rayClip.y, -1.f, 0.f);
 
@@ -111,7 +111,7 @@ int TicScene::OnLoad()
 	board.Init();
 	simpleShader->Use();
 	//board.SetTranslate(glm::vec3(1.f, 1.f, 0.f));
-	board.SetScale(glm::vec3(0.8f, 0.8f, 1.f)); //TODO add player scaling to fit this
+	//board.SetScale(glm::vec3(0.9f, 0.9f, 1.f)); //TODO add player scaling to fit this
 	return 1;
 }
 
