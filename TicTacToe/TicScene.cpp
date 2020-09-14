@@ -97,7 +97,7 @@ void TicScene::OnMouseClick(MouseClickEvent& e)
 		if (ray.Intersect(board.GetBoundingBox(), tMin))
 		{
 			glm::vec3 intersectPoint = camera.GetPosition() + (radyDir3 * tMin);
-			board.SetTile(intersectPoint, player);
+			board.SetTurn(intersectPoint, player);
 		}
 	}
 }

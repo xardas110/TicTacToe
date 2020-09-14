@@ -2,9 +2,10 @@
 #include <iostream>
 #include "../Engine/Debug.h"
 #include <immintrin.h>
-
+#include <inttypes.h>
+#include "TileInfo.h"
 Board::Board()
-	:worldSpace(glm::mat4(1.f)), inverseWorld(glm::mat4(1.f)), boardSpace(glm::mat4(1.f)), inverseBoard(glm::mat4(1.f)), gridLengthX(3), gridLengthY(3), gridSizeX(1.f), gridSizeY(1.f), playerScaleX(0.6f), playerScaleY(0.6f)
+	:worldSpace(glm::mat4(1.f)), inverseWorld(glm::mat4(1.f)), boardSpace(glm::mat4(1.f)), inverseBoard(glm::mat4(1.f)), gridLengthX(3), gridLengthY(3), gridSizeX(1.f), gridSizeY(1.f), playerScaleX(0.6f), playerScaleY(0.6f), Ai((AIScripted::Player)Player::PlayerO, (AIScripted::Player)Player::PlayerX)
 {
 
 	for (int i = 0; i < tiles.length(); i++)
@@ -60,13 +61,22 @@ Board::TileState Board::SetTile(int x, int y, Player player)
 		return TileState::OutSideBounds;
 	}
 
-	std::cout << "Turn accepted" << std::endl;
+	std::cout << "Turn accepted " << y << " " << x <<  std::endl;
 	tiles[y][x] = player;
 	playerDrawList[player].push_back(GetTileCentrePositionWS(x, y));
 	winnerState = CheckWinner(glm::vec<2, int>(x, y), player);
 	
-
 	return TileState::Success;
+}
+
+void Board::SetTurn(glm::vec3 posWS, Player player)
+{
+	TileState state;
+	state = SetTile(posWS, player);
+	if (state == TileState::Success)
+	{
+		AISetTurn();
+	}
 }
 
 Board::TileState Board::IsTileTaken(const int x, const int y)
@@ -137,120 +147,110 @@ void Board::Init()
 
 Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 {
-	//Looks like this isn't optimized cuz of lots of code, but it only uses a few instructions for everything
 	using vec2 = glm::vec<2, int>;
-	using vec4 = glm::vec<4, __int64>; //w will be used as open tiles for the ai, byte 1 = tile0.x, byte2 = tile0.y, byte 3 = tile1.x, byte 4 = tile1.y
-	using mat3 = glm::mat<3, 3, int>;
+	using vec3 = glm::vec<3, int>;
 
 	//priority map for AI
-	std::map<int, vec4> priorityMap;
-	std::vector<vec4> r;
+	//row combinations
+	std::vector<tileInfo> tInfo;//2 instructions
+	//inserting tile x,y locations inside a bytebuffer
+	tileInfo r0, r1, r2, r3, r4;
+	r0.r = vec3(tiles[pos.y][0], tiles[pos.y][1], tiles[pos.y][2]);
+	r1.r = vec3(tiles[0][pos.x], tiles[1][pos.x], tiles[2][pos.x]);
 
-	char bytesh[]{ (char)pos.y, (char)0, (char)pos.y, (char)1, (char)pos.y, (char)2 };
-	char bytesv[]{ (char)0, (char)pos.x, (char)1, (char)pos.x, (char)2, (char)pos.x };
-	char bytes[6]{};
-	char bytes1[6]{};
-	char bytes2[6]{};
-	r.push_back(vec4(tiles[pos.y][0], tiles[pos.y][1], tiles[pos.y][2], (__int64)bytesh));
-	r.push_back(vec4(tiles[0][pos.x], tiles[1][pos.x], tiles[2][pos.x], (__int64)bytesv));
-	std::cout << "pos.x value: " << pos.x << " pos.y value" << pos.y << std::endl;
+	r0.tilePos[0] = vec2(pos.y, 0);
+	r0.tilePos[1] = vec2(pos.y, 1);
+	r0.tilePos[2] = vec2(pos.y, 2);
+	r1.tilePos[0] = vec2(0, pos.x);
+	r1.tilePos[1] = vec2(1, pos.x);
+	r1.tilePos[2] = vec2(2, pos.x);
+	tInfo.push_back(r0);
+	tInfo.push_back(r1);
 	const int sum = pos.y - pos.x;
 	
 	if (sum != 1 and sum != -1)
 	{
 		if (pos.x == 1 && pos.y == 1) //4 combinations if its in the middle
 		{
-			char buff1[]{ (char)0, (char)2 , (char)2 , (char)0, (char)1 , (char)1 };
-			char buff2[]{ (char)0, (char)0 , (char)2 , (char)2, (char)1 , (char)1 };
-			memcpy(bytes1, buff1, 6);
-			memcpy(bytes2, buff2, 6);
-			r.push_back(vec4(tiles[bytes1[0]][bytes1[1]], tiles[bytes1[2]][bytes1[3]],tiles[1][1], (__int64)bytes1));
-			r.push_back(vec4(tiles[bytes2[0]][bytes2[1]], tiles[bytes2[2]][bytes2[3]], tiles[1][1], (__int64)bytes2));
+			r2.r = vec3(tiles[0][2], tiles[2][0], tiles[1][1]);
+			r3.r = vec3(tiles[0][0], tiles[2][2], tiles[1][1]);
+			r2.tilePos[0] = vec2(0, 2);
+			r2.tilePos[1] = vec2(2, 0);
+			r2.tilePos[2] = vec2(1, 1);
+			r3.tilePos[0] = vec2(0, 0);
+			r3.tilePos[1] = vec2(2, 2);
+			r3.tilePos[2] = vec2(1, 1);
+			tInfo.push_back(r2);
+			tInfo.push_back(r3);
 		}
 		else{
 			vec2 temp(2 - pos.x, 2 - pos.y);
 			vec2 temp1 = (temp + pos) / 2; //change to multiplication cuz division requires more cycles
-			char buff3[] = { (char)temp.y, (char)temp.x , (char)temp1.y , (char)temp1.x, (char)pos.y, (char)pos.x };
-			memcpy(bytes, buff3, 6);
-			r.push_back(vec4(tiles[bytes[0]][bytes[1]], tiles[bytes[2]][bytes[3]], tiles[bytes[4]][bytes[5]], (__int64)bytes));
+			r4.r = vec3(tiles[temp.y][temp.x], tiles[temp1.y][temp1.x], tiles[pos.y][pos.x]);
+			r4.tilePos[0] = vec2(temp.y, temp.x);
+			r4.tilePos[1] = vec2(temp1.y, temp1.x);
+			r4.tilePos[2] = vec2(pos.y, pos.x);
+			tInfo.push_back(r4);
 		}
 	}
 	
-	for (int i = 0; i < r.size(); i++)
+	for (int i = 0; i < tInfo.size(); i++) //max size for r is 4, but usually at 2-3
 	{
-		const auto rSum = r[i].x + r[i].y + r[i].z;
+		const auto rSum = tInfo[i].r.x + tInfo[i].r.y + tInfo[i].r.z;
+		std::cout << "row sum: " << rSum << std::endl;
 		switch (rSum)
 		{
-		case 0:
-			std::cout << "Player o won" << std::endl;
-			return WinnerState::O;
-			break;
-		case 3:
-			std::cout << "Player x won" << std::endl;
-			return WinnerState::X;
-			break;
-		case -1: //11-3=-1
-		{
-			priorityMap[0] = r[i];
-			std::cout << "//11-3 =-1, player x is about to win" << std::endl;
-		}
-		break;
-		case -3: //00-3=-3
-		{
-			priorityMap[1] = r[i];
-			std::cout << "//00-3=-3 player o is about to win" << std::endl;
-		}
-		break;
-		case -6:
-		{
-			priorityMap[2] = r[i];
-		}
-		break;
-		case -5:
-		{
-			priorityMap[2] = r[i];
-		}
-		break;
-		case -2:
-		{
-			priorityMap[4] = r[i];
-		}
-		break;
-		default:
-			break;
-		}
-	}
-
-	SetNextPlayerTurn(player);
-	for (auto &pM : priorityMap)
-	{ 
-		auto a = pM.second.w;
-		char* p = (char*)a;
-		TileState sate;
-		//const auto sum = tiles[p[0]][p[1]] + tiles[p[2]][p[3]] + tiles[p[4]][p[5]];
-		sate = SetTile(p[3], p[2], Player::PlayerX);
-		std::cout << "state 1: " << sate << std::endl;
-		if (sate == TileState::Taken)
-		{
-			sate = SetTile(p[1], p[0], Player::PlayerX);
-			std::cout << "state 2: " << sate << std::endl;
-			if (sate == TileState::Taken)
+			case 0:
+				std::cout << "Player o won" << std::endl;
+				return WinnerState::O;
+				break;
+			case 3:
+				std::cout << "Player x won" << std::endl;
+				return WinnerState::X;
+				break;
+			default:
 			{
-				sate = SetTile(p[5], p[4], Player::PlayerX);
-				std::cout << "state 3: " << sate << std::endl;
+				tInfo[i].sum = rSum;
+				break;
 			}
 		}
-		std::cout << sate << std::endl;
 	}
-	
+	Ai.CalculatePriorityMap(tInfo);
+	SetNextPlayerTurn(player);
 	return WinnerState::NoWinner;
 
 }
 
-void Board::AICalculateTurn(std::map<int, glm::vec<3, int>> priorityMap)
+void Board::AISetTurn()
 {
-	
-
+	for (auto& pM : Ai.priorityMap)
+	{
+		std::cout << "Priority map priorities: " << pM.first << std::endl;
+		TileState sate;
+		auto const x0 = pM.second.tilePos[1].x;
+		auto const y0 = pM.second.tilePos[1].y;
+		sate = SetTile(y0, x0, (Player)Ai.aiSide);
+		std::cout << "state 1: " << sate << std::endl;
+		if (sate != TileState::Success)
+		{
+			auto const x1 = pM.second.tilePos[0].x;
+			auto const y1 = pM.second.tilePos[0].y;
+			sate = SetTile(y1, x1, (Player)Ai.aiSide);
+			std::cout << "state 2: " << sate << std::endl;
+			if (sate != TileState::Success)
+			{
+				auto const x2 = pM.second.tilePos[2].x;
+				auto const y2 = pM.second.tilePos[2].y;
+				sate = SetTile(y2, x2, (Player)Ai.aiSide);
+				std::cout << "state 3: " << sate << std::endl;
+			}
+			else
+				return;
+		}
+		else
+			return;
+		std::cout << sate << std::endl;
+	}
 
 }
 

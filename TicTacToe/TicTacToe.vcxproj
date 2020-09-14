@@ -143,12 +143,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AIScripted.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TicScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AIScripted.h" />
     <ClInclude Include="Board.h" />
+    <ClInclude Include="TileInfo.h" />
     <ClInclude Include="TicScene.h" />
   </ItemGroup>
   <ItemGroup>

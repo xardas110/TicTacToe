@@ -8,6 +8,7 @@
 #include <xmmintrin.h>
 #include <vector>
 #include <map>
+#include "AIScripted.h"
 
 class Board
 {
@@ -30,7 +31,7 @@ public:
 		Open = -3,
 		NotYourTurn,
 		OutSideBounds,
-		Success
+		Success = 10
 	};
 	enum WinnerState
 	{
@@ -39,8 +40,8 @@ public:
 	};
 
 
-	TileState SetTile(glm::vec3 posWS, Player player);	
-	TileState SetTile(int x, int y, Player player);
+	
+	void SetTurn(glm::vec3 posWS, Player player);
 	void SetTranslate(glm::vec3 translate);
 	void SetScale(glm::vec3 scale);
 	const Bounding::Box GetBoundingBox() const;
@@ -50,11 +51,14 @@ public:
 	void Init();
 	
 private:
+	TileState SetTile(glm::vec3 posWS, Player player);
+	TileState SetTile(int x, int y, Player player);
+	AIScripted Ai;
 	Player currentPlayerTurn = Player::PlayerO;
 	GameState gameState = GameState::OnGoing;
 	WinnerState winnerState = WinnerState::NoWinner;
 	WinnerState _vectorcall CheckWinner(glm::vec<2, int> pos, Player player);
-	void AICalculateTurn(std::map<int, glm::vec<3, int>> priorityMap);
+	void AISetTurn();
 	void SetNextPlayerTurn(Player currentPlayer);
 	const int gridLengthX;
 	const int gridLengthY; //All these positions are done inside board space,and they will be constants for tictactoe, 3*3 tiles and gridsize is 1, for fastest possible array access
