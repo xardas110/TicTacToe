@@ -12,7 +12,7 @@ public:
 	void BindMat4(const std::string &name, glm::mat4 mat);
 	void BindVec3(const std::string& name, glm::vec3 vec);
 	void BindVec2(const std::string& name, glm::vec3 vec);
-
+	void BindInt(const std::string& name, int id);
 	Shader(const char* vertexPath, const char* fragPath);
 };
 

@@ -90,6 +90,11 @@ void Shader::BindVec2(const std::string& name, glm::vec3 vec)
 	glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(vec));
 }
 
+void Shader::BindInt(const std::string& name, int id)
+{
+	glUniform1i(glGetUniformLocation(ID, name.c_str()), id);
+}
+
 Shader::Shader(const char* vertexPath, const char* fragPath)
 {
 	CreateShaders(vertexPath, fragPath);

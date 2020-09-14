@@ -1,15 +1,15 @@
 #pragma once
 #include "../Engine/Game.h"
-#include <string>
 #include "../Engine/Shader.h"
-#include <memory>
 #include "../Engine/Mesh.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Events.h"
 #include "../Engine/BoundingShapes.h"
 #include "../Engine/Raycast.h"
+#include "../Engine/Skybox.h"
 #include "Board.h"
-
+#include <memory>
+#include <string>
 class TicScene : public Game
 {
 public:
@@ -25,6 +25,8 @@ public:
 
 private:
 	std::shared_ptr<Shader> simpleShader;
+	std::shared_ptr<Shader> skyboxShader;
+	Skybox skybox;
 	Camera camera;
 	float mX, mY;
 	Board board;

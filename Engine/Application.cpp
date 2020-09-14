@@ -3,6 +3,7 @@
 #include <map>
 #include <iostream>
 
+
 using WindowMap = std::map<std::string, std::shared_ptr<Window>>;
 static Application* gs_S = nullptr;
 double Application::lastFrame = glfwGetTime();
@@ -75,9 +76,10 @@ int Application::Run(std::shared_ptr<Game> g)
 		glViewport(0, 0, g->win->GetWidth(), g->win->GetHeight());
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_FALSE);
 		//glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
+		//glCullFace(GL_FRONT);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		g->OnRender();
 		glfwSwapBuffers(g->win->GetRenderWindow());
@@ -116,6 +118,39 @@ void Application::Destroy()
 	
 	glfwTerminate();
 	exit(EXIT_SUCCESS);
+}
+
+unsigned int Application::LoadCubeMapTextures(std::vector<std::string> textures)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	stbi_set_flip_vertically_on_load(false);
+	int width, height, nrChannels;
+	for (unsigned int i = 0; i < textures.size(); i++)
+	{
+		unsigned char* data = stbi_load(textures[i].c_str(), &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+			);
+			stbi_image_free(data);
+		}
+		else
+		{
+			std::cout << "Cubemap texture failed to load at path: " << textures[i] << std::endl;
+			stbi_image_free(data);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureID;
 }
 
 void Application::Init(std::shared_ptr<Game> g)

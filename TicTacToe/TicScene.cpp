@@ -1,8 +1,7 @@
-#include "TicScene.h"
 #include "../include/glm/gtc/matrix_transform.hpp"
-#include <iostream>
 #include "../Engine/Debug.h"
-
+#include "TicScene.h"
+#include <iostream>
 
 TicScene::TicScene(std::string name, int width, int height, bool vSync)
 	:Game(name, width, height), mX(0.f), mY(0.f)
@@ -108,6 +107,19 @@ int TicScene::OnLoad()
 	camera.SetLookAt(camPos, glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 1.f, 0.f));
 	camera.SetProjection(45.0f, (float)win->GetWidth() / (float)win->GetHeight(), 0.1f, 100.0f);
 	simpleShader = std::shared_ptr<Shader>(new Shader("Shaders/Primitives.vs", "Shaders/Primitives.fs"));
+	skyboxShader = std::shared_ptr<Shader>(new Shader("Shaders/Skybox.vs", "Shaders/Skybox.fs"));
+
+	std::vector<std::string> textures
+	{
+		"../Textures/Starfield_And_Haze/Textures/Starfield_And_Haze_left.png",
+		"../Textures/Starfield_And_Haze/Textures/Starfield_And_Haze_right.png",
+		"../Textures/Starfield_And_Haze/Textures/Starfield_And_Haze_up.png",
+		"../Textures/Starfield_And_Haze/Textures/Starfield_And_Haze_down.png",
+		"../Textures/Starfield_And_Haze/Textures/Starfield_And_Haze_front.png",
+		"../Textures/Starfield_And_Haze/Textures/Starfield_And_Haze_back.png"
+	};
+
+	skybox.Init(textures);
 	board.Init();
 	simpleShader->Use();
 	//board.SetTranslate(glm::vec3(1.f, 1.f, 0.f));
@@ -121,9 +133,12 @@ void TicScene::OnRender()
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 project = camera.GetProjectionMatrix();
 	glm::mat4 projectView = project * view;
-	glm::mat4 MVP = projectView * board.GetWorldSpace();
+	glm::mat4 skyboxView = glm::mat3(view);
+	glm::mat4 skyBoxVP = project * skyboxView;
+	skyboxShader->Use();
+	skyboxShader->BindMat4("MVP", skyBoxVP);
+	skybox.Draw(skyboxShader);
 	simpleShader->Use();
-	simpleShader->BindVec3("color", glm::vec3(1.f, 0.f, 0.f));
-	simpleShader->BindMat4("MVP", MVP);
+	simpleShader->BindVec3("camPos", camera.GetPosition());
 	board.Draw(simpleShader, projectView);
 }

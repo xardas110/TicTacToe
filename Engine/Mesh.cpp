@@ -31,6 +31,15 @@ void Mesh::Draw(unsigned int mode)
     glBindVertexArray(0);
 }
 
+void Mesh::Draw(unsigned int textureID, unsigned int textureSlot, unsigned int textureType, unsigned int mode)
+{
+    glBindVertexArray(ID);
+    glActiveTexture(textureSlot);
+    glBindTexture(textureType, textureID);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+}
+
 std::unique_ptr<Mesh> Mesh::CreateQuad(const unsigned int size)
 { 
     unsigned int VAO, VBO, EBO;
@@ -61,7 +70,9 @@ std::unique_ptr<Mesh> Mesh::CreateQuad(const unsigned int size)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_READ);
  
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)NULL);  
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)NULL); 
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, n));
     glBindVertexArray(0);
 
     std::unique_ptr<Mesh> mesh(new Mesh(VAO, _countof(indices)));
@@ -110,6 +121,8 @@ std::unique_ptr<Mesh> Mesh::CreateCircle(const unsigned int vertCount, const flo
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)NULL);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, n));
     glBindVertexArray(0);
     
     std::unique_ptr<Mesh> mesh(new Mesh(VAO, indices.size() * 3U));
@@ -164,52 +177,67 @@ std::unique_ptr<Mesh> Mesh::CreateGrid(const unsigned int gridX, const unsigned 
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateBox(const float size)
+
+std::unique_ptr<Mesh> Mesh::CreateSkyBox(const float s)
 {
-    unsigned int VAO, VBO, EBO;
-    std::vector<Vertex> boxVert;
+    unsigned int VAO, VBO;
+    const float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
 
-    const auto s = size * 0.5f;
-    boxVert.push_back(Vertex({ s, s, s }, { 0.f, 0.f, 1.f })); //Right-Top-Front
-    boxVert.push_back(Vertex({ s, -s, s }, { 0.f, 0.f, 1.f })); //Right-Bot-Front
-    boxVert.push_back(Vertex({ -s, -s, s }, { 0.f, 0.f, 1.f })); //Left-Bot-Front
-    boxVert.push_back(Vertex({ -s, s, s }, { 0.f, 0.f, 1.f }));  //Left-Top-Front
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
 
-    boxVert.push_back(Vertex({ s, s, -s }, { 0.f, 0.f, -1.f })); //Right-Top-Back
-    boxVert.push_back(Vertex({ s, -s, -s }, { 0.f, 0.f, -1.f })); //Right-Bot-Back
-    boxVert.push_back(Vertex({ -s, -s, -s }, { 0.f, 0.f, -1.f })); //Left-Bot-Back
-    boxVert.push_back(Vertex({ -s, s, -s }, { 0.f, 0.f, -1.f })); //Left-Top-Back
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
 
-    boxVert.push_back(Vertex({ -s, s, s }, { -1.f, 0.f, 0.f })); //Left-Top-Front
-    boxVert.push_back(Vertex({ -s, s, -s }, { -1.f, 0.f, 0.f })); //Left-Bot-Front
-    boxVert.push_back(Vertex({ -s, -s, -s }, { -1.f, 0.f, 0.f })); //Left-Bot-Front
-    boxVert.push_back(Vertex({ -s, s, s }, { -1.f, 0.f, 0.f })); //Left-Top-Front
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
 
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
 
-
-    unsigned int indices[] =
-    {
-        0U, 1U, 3U,
-        1U, 2U, 3U
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
     };
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, boxVert.size() * sizeof(Vertex), boxVert.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_READ);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)NULL);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, (void*)NULL);
     glBindVertexArray(0);
 
-    std::unique_ptr<Mesh> mesh(new Mesh(VAO, _countof(indices)));
+    std::unique_ptr<Mesh> mesh(new Mesh(VAO, 36));
     return mesh;
     return std::unique_ptr<Mesh>();
 }

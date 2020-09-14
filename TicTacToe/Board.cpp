@@ -120,7 +120,10 @@ const glm::mat4& Board::GetWorldSpace()
 
 void Board::Draw(std::shared_ptr<Shader> shader, glm::mat4 projView)
 {
+	glm::mat4 boardMVP = projView * GetWorldSpace();
 	shader->BindVec3("color", glm::vec3(1.f, 1.f, 1.f));
+	shader->BindMat4("worldspace", GetWorldSpace());
+	shader->BindMat4("MVP", boardMVP);
 	grid->Draw(0x0001);//draw lines
 	
 	for (int j = 0; j < _countof(playerDrawList); j++)
@@ -131,6 +134,7 @@ void Board::Draw(std::shared_ptr<Shader> shader, glm::mat4 projView)
 			auto model = glm::mat4(1.f);
 			model = glm::translate(model, playerDrawList[j][i]);
 			model = glm::scale(model, glm::vec3(playerScaleX, playerScaleY, 1.f));
+			shader->BindMat4("worldspace", model);
 			shader->BindMat4("MVP", projView * model);
 			playerMesh[j]->Draw();
 		}
@@ -141,10 +145,10 @@ void Board::Draw(std::shared_ptr<Shader> shader, glm::mat4 projView)
 void Board::Init()
 {
 	grid = Mesh::CreateGrid(gridLengthX, gridLengthY, gridSizeX, gridSizeY);
-	playerMesh[Player::PlayerO] = Mesh::CreateCircle(16);//16 circle vertex edges
+	playerMesh[Player::PlayerO] = Mesh::CreateCircle(64);//16 circle vertex edges
 	playerMesh[Player::PlayerX] = Mesh::CreateQuad();
-	playerColor[Player::PlayerO] = glm::vec3(0.f, 1.f, 0.f);
-	playerColor[Player::PlayerX] = glm::vec3(1.f, 0.f, 0.f);
+	playerColor[Player::PlayerO] = glm::vec3(0.07568f, 0.61424f, 0.07568f);
+	playerColor[Player::PlayerX] = glm::vec3(0.61424, 0.04136, 0.04136);
 }
 
 Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
@@ -155,7 +159,6 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 	//priority map for AI
 	//row combinations
 	std::vector<TileInfo> tInfo;//2 instructions
-	//inserting tile x,y locations inside a bytebuffer
 	TileInfo r0, r1, r2, r3, r4;
 	r0.r = vec3(tiles[pos.y][0], tiles[pos.y][1], tiles[pos.y][2]);
 	r1.r = vec3(tiles[0][pos.x], tiles[1][pos.x], tiles[2][pos.x]);
@@ -170,7 +173,7 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 	tInfo.push_back(r1);
 
 	const int sum = pos.y - pos.x;
-	if (sum != 1 and sum != -1)
+	if (sum != 1 and sum != -1) //Need to do diagonal checks if this is true
 	{
 		if (pos.x == 1 && pos.y == 1) //4 combinations if its in the middle
 		{
@@ -187,7 +190,7 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 		}
 		else{
 			vec2 temp(2 - pos.x, 2 - pos.y);
-			vec2 temp1 = (temp + pos) / 2; //change to multiplication cuz division requires more cycles
+			vec2 temp1 = (temp + pos) / 2; //change to multiplication cuz division require more cycles
 			r4.r = vec3(tiles[temp.y][temp.x], tiles[temp1.y][temp1.x], tiles[pos.y][pos.x]);
 			r4.tilePos[1] = vec2(temp.y, temp.x);
 			r4.tilePos[0] = vec2(temp1.y, temp1.x);

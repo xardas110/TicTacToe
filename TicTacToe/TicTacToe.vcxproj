@@ -157,6 +157,8 @@
   <ItemGroup>
     <None Include="Shaders\Primitives.fs" />
     <None Include="Shaders\Primitives.vs" />
+    <None Include="Shaders\Skybox.fs" />
+    <None Include="Shaders\Skybox.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

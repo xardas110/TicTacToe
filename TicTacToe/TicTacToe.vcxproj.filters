@@ -49,5 +49,11 @@
     <None Include="Shaders\Primitives.fs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Shaders\Skybox.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Shaders\Skybox.vs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

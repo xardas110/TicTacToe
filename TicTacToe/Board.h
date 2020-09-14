@@ -49,9 +49,9 @@ public:
 	void Init();
 	
 private:
+	AIScripted Ai;
 	TileState SetTile(glm::vec3 posWS, Player player);
 	TileState SetTile(int x, int y, Player player);
-	AIScripted Ai;
 	Player currentPlayerTurn = Player::PlayerO;
 	GameState gameState = GameState::OnGoing;
 	WinnerState winnerState = WinnerState::NoWinner;
@@ -65,8 +65,9 @@ private:
 	const float gridSizeY;
 	std::vector<glm::vec3> playerDrawList[Player::Size];
 	std::unique_ptr<Mesh> playerMesh[Player::Size];
-	glm::vec3 playerColor[Player::Size];
 	std::unique_ptr<Mesh> grid;
+	glm::vec3 playerColor[Player::Size];
+	
 	glm::mat<3,3, int> tiles;
 	glm::vec3 GetTileCentrePositionWS(const int x, const int y);
 	Bounding::Box BB; //Bounding box that will be the board;
