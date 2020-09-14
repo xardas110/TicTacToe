@@ -163,3 +163,53 @@ std::unique_ptr<Mesh> Mesh::CreateGrid(const unsigned int gridX, const unsigned 
     std::unique_ptr<Mesh> mesh(new Mesh(VAO, indices.size()));
     return mesh;
 }
+
+std::unique_ptr<Mesh> Mesh::CreateBox(const float size)
+{
+    unsigned int VAO, VBO, EBO;
+    std::vector<Vertex> boxVert;
+
+    const auto s = size * 0.5f;
+    boxVert.push_back(Vertex({ s, s, s }, { 0.f, 0.f, 1.f })); //Right-Top-Front
+    boxVert.push_back(Vertex({ s, -s, s }, { 0.f, 0.f, 1.f })); //Right-Bot-Front
+    boxVert.push_back(Vertex({ -s, -s, s }, { 0.f, 0.f, 1.f })); //Left-Bot-Front
+    boxVert.push_back(Vertex({ -s, s, s }, { 0.f, 0.f, 1.f }));  //Left-Top-Front
+
+    boxVert.push_back(Vertex({ s, s, -s }, { 0.f, 0.f, -1.f })); //Right-Top-Back
+    boxVert.push_back(Vertex({ s, -s, -s }, { 0.f, 0.f, -1.f })); //Right-Bot-Back
+    boxVert.push_back(Vertex({ -s, -s, -s }, { 0.f, 0.f, -1.f })); //Left-Bot-Back
+    boxVert.push_back(Vertex({ -s, s, -s }, { 0.f, 0.f, -1.f })); //Left-Top-Back
+
+    boxVert.push_back(Vertex({ -s, s, s }, { -1.f, 0.f, 0.f })); //Left-Top-Front
+    boxVert.push_back(Vertex({ -s, s, -s }, { -1.f, 0.f, 0.f })); //Left-Bot-Front
+    boxVert.push_back(Vertex({ -s, -s, -s }, { -1.f, 0.f, 0.f })); //Left-Bot-Front
+    boxVert.push_back(Vertex({ -s, s, s }, { -1.f, 0.f, 0.f })); //Left-Top-Front
+
+
+
+    unsigned int indices[] =
+    {
+        0U, 1U, 3U,
+        1U, 2U, 3U
+    };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferData(GL_ARRAY_BUFFER, boxVert.size() * sizeof(Vertex), boxVert.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_READ);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)NULL);
+    glBindVertexArray(0);
+
+    std::unique_ptr<Mesh> mesh(new Mesh(VAO, _countof(indices)));
+    return mesh;
+    return std::unique_ptr<Mesh>();
+}

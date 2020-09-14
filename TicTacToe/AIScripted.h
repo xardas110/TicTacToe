@@ -17,6 +17,5 @@ private:
 public:
 	AIScripted(Player playerSide, Player aiSide);
 	void _vectorcall CalculatePriorityMap(std::vector<TileInfo> tinfo, const glm::mat<3, 3, int>& tiles);
-
 };
 

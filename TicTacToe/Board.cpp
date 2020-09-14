@@ -4,6 +4,7 @@
 #include <immintrin.h>
 #include <inttypes.h>
 #include "TileInfo.h"
+#include <ctime>
 Board::Board()
 	:worldSpace(glm::mat4(1.f)), inverseWorld(glm::mat4(1.f)), boardSpace(glm::mat4(1.f)), inverseBoard(glm::mat4(1.f)), gridLengthX(3), gridLengthY(3), gridSizeX(1.f), gridSizeY(1.f), playerScaleX(0.6f), playerScaleY(0.6f), Ai((AIScripted::Player)Player::PlayerO, (AIScripted::Player)Player::PlayerX)
 {
@@ -16,6 +17,7 @@ Board::Board()
 	const auto gridYHalf = (gridLengthY * gridSizeY) * 0.5f;
 	boardSpace = glm::translate(boardSpace, glm::vec3(gridXHalf, gridYHalf, 0.f));
 	inverseBoard = glm::inverse(boardSpace);
+	AISetTurn();
 }
 
 Board::TileState Board::SetTile(glm::vec3 posWS, Player player)
@@ -221,9 +223,15 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 
 void Board::AISetTurn()
 {
+	if (!Ai.priorityMap.size())
+	{ 
+		std::srand(std::time(nullptr));
+		int valX = rand() % 3 + 0;
+		int valY = rand() % 3 + 0;
+		SetTile(valX, valY, (Player)Ai.aiSide);
+	}
 	for (auto& pM : Ai.priorityMap)
-	{
-		
+	{	
 		for (int i = 0; i < _countof(pM.second.tilePos); i++)
 		{
 			auto const x = pM.second.tilePos[i].x;
@@ -231,9 +239,7 @@ void Board::AISetTurn()
 			if (SetTile(y, x, (Player)Ai.aiSide) == TileState::Success)
 				return;
 		}
-
 	}
-
 }
 
 void Board::SetNextPlayerTurn(Player currentPlayer)

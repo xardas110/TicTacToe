@@ -33,14 +33,12 @@ public:
 		OutSideBounds,
 		Success = 10
 	};
-	enum WinnerState
+	enum WinnerState//TODO: REMOVE THIS and use gamestate instead
 	{
 		O, X,
 		NoWinner
 	};
 
-
-	
 	void SetTurn(glm::vec3 posWS, Player player);
 	void SetTranslate(glm::vec3 translate);
 	void SetScale(glm::vec3 scale);
@@ -65,17 +63,16 @@ private:
 	float playerScaleX, playerScaleY;
 	const float gridSizeX;
 	const float gridSizeY;
-	std::vector<glm::vec3> playerDrawList[2];
+	std::vector<glm::vec3> playerDrawList[Player::Size];
 	std::unique_ptr<Mesh> playerMesh[Player::Size];
 	glm::vec3 playerColor[Player::Size];
 	std::unique_ptr<Mesh> grid;
-	glm::mat<3,3, int> tiles;// would be simpler to have a matrix class for this datatype
+	glm::mat<3,3, int> tiles;
 	glm::vec3 GetTileCentrePositionWS(const int x, const int y);
 	Bounding::Box BB; //Bounding box that will be the board;
 //inverse world gives me localspace
 	glm::mat4 worldSpace, inverseWorld; //keeping everything in 3d calculations just in case I want to make this 3d instead, with intel SIMD instructions will basically be as good optimized as single instructions anyways -> TODO for a later date
 	glm::mat4 boardSpace, inverseBoard; //for optimized grid calculations, top left 0, 0 - bot right gridX-1.f, gridY-1.f for fast array access
 	TileState IsTileTaken(const int x, const int y);
-
 };
 
