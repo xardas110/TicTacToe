@@ -6,16 +6,34 @@
 class AIScripted
 {
 	friend class Board;
-private:
+public:
 	enum Player
 	{
 		PlayerO,
 		PlayerX,
 		Size
 	}playerSide = Player::PlayerO, aiSide = Player::PlayerX;
-	std::map<int, TileInfo> priorityMap; //Will hold move priorities for 2 turns, 1 for playerO and 1 for playerX
 public:
 	AIScripted(Player playerSide, Player aiSide);
-	void _vectorcall CalculatePriorityMap(std::vector<TileInfo> tinfo, const glm::mat<3, 3, int>& tiles);
+	virtual void _vectorcall CalculatePriorityMap(std::vector<RowInfo> tinfo, const glm::mat<3, 3, int>& tiles);
+	~AIScripted();
+protected:
+	std::map<int, RowInfo> priorityMap; //Will hold move priorities for 2 turns, 1 for playerO and 1 for playerX
+
 };
 
+class AIEasy : public AIScripted
+{
+private: RowInfo rInfo[3];
+public:
+	AIEasy(Player playerSide, Player aiSide);
+	virtual void _vectorcall CalculatePriorityMap(std::vector<RowInfo> tinfo, const glm::mat<3, 3, int>& tiles) override;
+};
+
+class AINormal : public AIScripted
+{
+private: RowInfo rInfo[3];
+public:
+	AINormal(Player playerSide, Player aiSide);
+	virtual void _vectorcall CalculatePriorityMap(std::vector<RowInfo> tinfo, const glm::mat<3, 3, int>& tiles) override;
+};

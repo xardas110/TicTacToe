@@ -95,7 +95,22 @@ void Shader::BindInt(const std::string& name, int id)
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), id);
 }
 
+void Shader::BindFloat(const std::string& name, int id)
+{
+	glUniform1f(glGetUniformLocation(ID, name.c_str()), id);
+}
+
 Shader::Shader(const char* vertexPath, const char* fragPath)
 {
 	CreateShaders(vertexPath, fragPath);
+}
+
+void Shader::BindBuffer(const std::string& name, const void* buffer, const size_t size)
+{
+	unsigned int bindID = glGetUniformLocation(ID, name.c_str());
+	//std::cout << "uniform name: " << name << std::endl;
+	std::cout << "buffer id: " << bindID << std::endl;
+	glBindBuffer(GL_UNIFORM_BUFFER, bindID);
+	glBufferData(GL_UNIFORM_BUFFER, size, buffer, GL_DYNAMIC_READ);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

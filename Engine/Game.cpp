@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Application.h"
 
 void Game::OnKeyPressed(KeyEvent &e)
 {
@@ -19,11 +20,24 @@ void Game::OnMouseClick(MouseClickEvent& e)
 	//printf("Mouse clicked inside game");
 }
 
+void Game::OnControlPress(WPARAM wParam, LPARAM lParam)
+{
+}
+
+void Game::HandleMessage(UINT message, WPARAM wParam, LPARAM lParam)
+{
+}
+
 int Game::Init()
 {
-	win->InitGLFW();
+	win = Application::Get().CreateRenderWindow(name, width, height, vSync);
 	win->game = this->shared_from_this();
 	return 1;
+}
+
+int Game::OnControlInit()
+{
+	return 0;
 }
 
 int Game::OnLoad()

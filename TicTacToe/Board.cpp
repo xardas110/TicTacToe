@@ -6,7 +6,13 @@
 #include "TileInfo.h"
 #include <ctime>
 Board::Board()
-	:worldSpace(glm::mat4(1.f)), inverseWorld(glm::mat4(1.f)), boardSpace(glm::mat4(1.f)), inverseBoard(glm::mat4(1.f)), gridLengthX(3), gridLengthY(3), gridSizeX(1.f), gridSizeY(1.f), playerScaleX(0.6f), playerScaleY(0.6f), Ai((AIScripted::Player)Player::PlayerO, (AIScripted::Player)Player::PlayerX)
+	:worldSpace(glm::mat4(1.f)), inverseWorld(glm::mat4(1.f)), 
+	boardSpace(glm::mat4(1.f)), inverseBoard(glm::mat4(1.f)), 
+	gridLengthX(3), gridLengthY(3), 
+	gridSizeX(1.f), gridSizeY(1.f), 
+	playerScaleX(0.8f), playerScaleY(0.8f), 
+	Ai(std::shared_ptr<AIScripted>(new AIScripted((AIScripted::Player)Player::PlayerX, (AIScripted::Player)Player::PlayerO))), 
+	currentPlayerTurn(Player::PlayerO)
 {
 
 	for (int i = 0; i < tiles.length(); i++)
@@ -17,18 +23,34 @@ Board::Board()
 	const auto gridYHalf = (gridLengthY * gridSizeY) * 0.5f;
 	boardSpace = glm::translate(boardSpace, glm::vec3(gridXHalf, gridYHalf, 0.f));
 	inverseBoard = glm::inverse(boardSpace);
-	AISetTurn();
+}
+
+Board::Board(std::shared_ptr<AIScripted> aiType)
+	:worldSpace(glm::mat4(1.f)), inverseWorld(glm::mat4(1.f)), 
+	boardSpace(glm::mat4(1.f)), inverseBoard(glm::mat4(1.f)), 
+	gridLengthX(3), gridLengthY(3), 
+	gridSizeX(1.f), gridSizeY(1.f), 
+	playerScaleX(0.6f), playerScaleY(0.8f), 
+	Ai(aiType), currentPlayerTurn(Player::PlayerO), tiles{0.f}
+{
+	for (int i = 0; i < tiles.length(); i++)
+		tiles[i] = glm::vec<3, int>(TileState::Open);
+
+	BB.SetExtents(glm::vec3(gridLengthX * gridSizeX, gridLengthY * gridSizeY, 0.f));
+	const auto gridXHalf = (gridLengthX * gridSizeX) * 0.5f;
+	const auto gridYHalf = (gridLengthY * gridSizeY) * 0.5f;
+	boardSpace = glm::translate(boardSpace, glm::vec3(gridXHalf, gridYHalf, 0.f));
+	inverseBoard = glm::inverse(boardSpace);
 }
 
 Board::TileState Board::SetTile(glm::vec3 posWS, Player player)
 {
-	if (winnerState != WinnerState::NoWinner)
+	if (gameState != GameState::OnGoing)
 		return TileState::NotYourTurn;
 	if (player != currentPlayerTurn)
 		return TileState::NotYourTurn;
 
 	auto localSpace = inverseWorld * glm::vec4(posWS, 1.f);
-	localSpace.w = 1.f;
 	auto boardSpace = this->boardSpace * glm::vec4(localSpace);
 	boardSpace.y = (gridLengthY * gridSizeY) - boardSpace.y;//Gotta invert y so I can use it inside an array, where top of the board has y as 0 and not gridylength-1		
 	//std::cout << localSpace.x << " " << localSpace.y << " " << localSpace.z << std::endl;
@@ -44,29 +66,26 @@ Board::TileState Board::SetTile(glm::vec3 posWS, Player player)
 	std::cout << "Turn accepted" << std::endl;
 	tiles[floorY][floorX] = player;
 	playerDrawList[player].push_back(GetTileCentrePositionWS(floorX, floorY));
-	winnerState = CheckWinner(glm::vec<2, int>(floorX, floorY), player);
+	gameState = CheckWinner(glm::vec<2, int>(floorX, floorY), player);
 	
 	return TileState::Success;
 }
 
 Board::TileState Board::SetTile(int x, int y, Player player)
 {
-	if (winnerState != WinnerState::NoWinner)
-		return TileState::NotYourTurn;
 	if (player != currentPlayerTurn)
 		return TileState::NotYourTurn;
 
+	if (gameState != GameState::OnGoing)
+		return TileState::NotYourTurn;
+	
 	if (IsTileTaken(x, y) == TileState::Taken)
 		return TileState::Taken;
-	if (IsTileTaken(x, y) == TileState::OutSideBounds)
-	{
-		return TileState::OutSideBounds;
-	}
 
 	std::cout << "Turn accepted " << y << " " << x <<  std::endl;
 	tiles[y][x] = player;
 	playerDrawList[player].push_back(GetTileCentrePositionWS(x, y));
-	winnerState = CheckWinner(glm::vec<2, int>(x, y), player);
+	gameState = CheckWinner(glm::vec<2, int>(x, y), player);
 	
 	return TileState::Success;
 }
@@ -88,6 +107,17 @@ Board::TileState Board::IsTileTaken(const int x, const int y)
 	if (tiles[y][x] != Open)
 		return TileState::Taken;
 	return TileState::Open;
+}
+
+Board::~Board()
+{
+	std::cout << "board destructor running" << std::endl;
+	if (auto ai = Ai.lock())
+	{ 
+		ai->~AIScripted();
+		Ai.~weak_ptr();
+	}
+	
 }
 
 void Board::SetTranslate(glm::vec3 translate)
@@ -118,48 +148,67 @@ const glm::mat4& Board::GetWorldSpace()
 	return worldSpace;
 }
 
-void Board::Draw(std::shared_ptr<Shader> shader, glm::mat4 projView)
+void Board::Draw(std::shared_ptr<Shader> shader, std::shared_ptr<Shader> shaderTex, glm::mat4 projView)
 {
 	glm::mat4 boardMVP = projView * GetWorldSpace();
-	shader->BindVec3("color", glm::vec3(1.f, 1.f, 1.f));
+	shader->BindVec3("ambient", glm::vec3(0.2, 0.2f, 0.2f));
+	shader->BindVec3("diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
+	shader->BindVec3("specular", glm::vec3(1.f, 1.f, 1.f));
+	shader->BindFloat("shininess", 64.f);
 	shader->BindMat4("worldspace", GetWorldSpace());
 	shader->BindMat4("MVP", boardMVP);
 	grid->Draw(0x0001);//draw lines
 	
+	shaderTex->Use();
 	for (int j = 0; j < _countof(playerDrawList); j++)
 	{ 
-		shader->BindVec3("color", playerColor[j]);
+		playerTexture[j]->BindTexture();
+		shaderTex->BindVec3("ambient", playerColor[j].ambient);
+		shaderTex->BindVec3("specular", playerColor[j].specular);
+		shaderTex->BindFloat("shininess", playerColor[j].shininess);
 		for (int i = 0; i < playerDrawList[j].size(); i++)
 		{
 			auto model = glm::mat4(1.f);
 			model = glm::translate(model, playerDrawList[j][i]);
 			model = glm::scale(model, glm::vec3(playerScaleX, playerScaleY, 1.f));
-			shader->BindMat4("worldspace", model);
-			shader->BindMat4("MVP", projView * model);
+			shaderTex->BindMat4("worldspace", model);
+			shaderTex->BindMat4("MVP", projView * model);
 			playerMesh[j]->Draw();
 		}
 	}
-
 }
 
 void Board::Init()
 {
 	grid = Mesh::CreateGrid(gridLengthX, gridLengthY, gridSizeX, gridSizeY);
-	playerMesh[Player::PlayerO] = Mesh::CreateCircle(64);//16 circle vertex edges
+	playerMesh[Player::PlayerO] = Mesh::CreateQuad();//64 circle vertex edges
 	playerMesh[Player::PlayerX] = Mesh::CreateQuad();
-	playerColor[Player::PlayerO] = glm::vec3(0.07568f, 0.61424f, 0.07568f);
-	playerColor[Player::PlayerX] = glm::vec3(0.61424, 0.04136, 0.04136);
+	playerTexture[Player::PlayerO] = Texture::LoadTextureFromFile("../Textures/O.png");
+	playerTexture[Player::PlayerX] = Texture::LoadTextureFromFile("../Textures/X.png");
+	playerColor[Player::PlayerO] = Material::CreateMaterial(
+		{ 0.0215f, 0.1745f, 0.0215f },
+		{ 0.07568f, 0.61424f, 0.07568f },
+		{ 1.f, 1.0f, 1.f },
+		4096.0f
+	);
+	playerColor[Player::PlayerX] = Material::CreateMaterial(
+		{ 0.1745f, 0.01175f, 0.01175f },
+		{ 0.61424f, 0.04136f, 0.04136f },
+		{ 1.0f, 1.0f, 1.0f },
+		4096.0f
+	);
+
+	AISetTurn();
 }
 
-Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
+Board::GameState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 {
 	using vec2 = glm::vec<2, int>;
 	using vec3 = glm::vec<3, int>;
-
 	//priority map for AI
 	//row combinations
-	std::vector<TileInfo> tInfo;//2 instructions
-	TileInfo r0, r1, r2, r3, r4;
+	std::vector<RowInfo> tInfo;//2 instructions
+	RowInfo r0, r1, r2, r3, r4;
 	r0.r = vec3(tiles[pos.y][0], tiles[pos.y][1], tiles[pos.y][2]);
 	r1.r = vec3(tiles[0][pos.x], tiles[1][pos.x], tiles[2][pos.x]);
 
@@ -205,13 +254,15 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 		switch (rSum)
 		{
 			case 0:
+			{
 				std::cout << "Player o won" << std::endl;
-				return WinnerState::O;
-				break;
+				return GameState::Finished;
+			}
 			case 3:
+			{
 				std::cout << "Player x won" << std::endl;
-				return WinnerState::X;
-				break;
+				return GameState::Finished;
+			}
 			default:
 			{
 				tInfo[i].sum = rSum;
@@ -219,29 +270,36 @@ Board::WinnerState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 			}
 		}
 	}
-	Ai.CalculatePriorityMap(tInfo, tiles);
+
+	glm::vec<3, int> tilesSum = tiles[0] + tiles[1] + tiles[2];
+	auto const totalSum = tilesSum.x + tilesSum.y  + tilesSum.z;
+	if (totalSum == 4)
+		return GameState::Finished;
+	if (auto AI = Ai.lock())
+		AI->CalculatePriorityMap(tInfo, tiles);
 	SetNextPlayerTurn(player);
-	return WinnerState::NoWinner;
+	return GameState::OnGoing;
 }
 
 void Board::AISetTurn()
-{
-	if (!Ai.priorityMap.size())
+{	
+	if (auto AI = Ai.lock())
 	{ 
-		std::srand(std::time(nullptr));
-		int valX = rand() % 3 + 0;
-		int valY = rand() % 3 + 0;
-		SetTile(valX, valY, (Player)Ai.aiSide);
-	}
-	for (auto& pM : Ai.priorityMap)
-	{	
-		for (int i = 0; i < _countof(pM.second.tilePos); i++)
-		{
-			auto const x = pM.second.tilePos[i].x;
-			auto const y = pM.second.tilePos[i].y;
-			if (SetTile(y, x, (Player)Ai.aiSide) == TileState::Success)
-				return;
+		for (auto& pM : AI->priorityMap)
+		{	
+			for (int i = 0; i < _countof(pM.second.tilePos); i++)
+			{
+				auto const x = pM.second.tilePos[i].x;
+				auto const y = pM.second.tilePos[i].y;
+				if (SetTile(y, x, (Player)AI->aiSide) == TileState::Success)
+					return;
+			}
 		}
+		//this means the priority map has not given any value, so let the ai set a random pos
+		std::srand((unsigned int)std::time(nullptr));
+		int valX = rand() % 3;
+		int valY = rand() % 3;
+		SetTile(valX, valY, (Player)AI->aiSide);
 	}
 }
 

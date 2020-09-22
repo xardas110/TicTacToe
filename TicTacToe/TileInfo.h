@@ -1,7 +1,7 @@
 #pragma once
 #include <../include/glm/glm.hpp>
 
-struct TileInfo
+struct RowInfo
 {
 public:
 	int sum;

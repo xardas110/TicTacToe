@@ -7,6 +7,9 @@
 #include "../Engine/BoundingShapes.h"
 #include "../Engine/Raycast.h"
 #include "../Engine/Skybox.h"
+#include "../Engine/Texture.h"
+#include "../Engine/Menu.h"
+#include "Settings.h"
 #include "Board.h"
 #include <memory>
 #include <string>
@@ -22,13 +25,19 @@ public:
 	virtual void OnMouseClick(MouseClickEvent& e) override;
 	virtual int	 OnLoad() override;
 	virtual void OnRender() override;
+	virtual int  OnControlInit() override;
+	virtual void OnControlPress(WPARAM wParam, LPARAM lParam) override;
 
 private:
-	std::shared_ptr<Shader> simpleShader;
+	std::shared_ptr<Shader> primitiveMaterialShader;
+	std::shared_ptr<Shader> primitiveTextureShader;
 	std::shared_ptr<Shader> skyboxShader;
+	std::shared_ptr<Texture>testTex;
+	std::shared_ptr<Menu>	menu;//Can't be unique ptr cuz application needs access to the inherited window ptr
 	Skybox skybox;
 	Camera camera;
 	float mX, mY;
-	Board board;
+	std::unique_ptr<Board> board;
+	Settings settings;
 };
 

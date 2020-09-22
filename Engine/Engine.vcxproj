@@ -159,6 +159,8 @@
     <ClCompile Include="glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Mesh.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
@@ -170,6 +172,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="Texture.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Window.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -181,15 +186,19 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="BoundingShapes.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CMD.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Events.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Precompiled.h" />
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

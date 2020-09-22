@@ -7,11 +7,13 @@
 #define PI 3.14159265
 struct Vertex
 {
+    Vertex(glm::vec3 p, glm::vec3 norm, glm::vec2 tc)
+        :p(p),n(norm),tc(tc) {}
     Vertex(glm::vec3 p, glm::vec3 norm)
-        :p(p),n(norm) {}
+        :p(p), n(norm), tc(0.f) {}
     glm::vec3 p;
     glm::vec3 n;
-    //textureCoords can be added later, that's why I use a struct
+    glm::vec2 tc;
 };
 
 Mesh::Mesh(unsigned int id, unsigned int iCount)
@@ -46,10 +48,10 @@ std::unique_ptr<Mesh> Mesh::CreateQuad(const unsigned int size)
     std::vector<Vertex> quadVert;
 
     const auto s = size * 0.5f;
-    quadVert.push_back(Vertex({ s, s, 0.f }, { 0.f, 0.f, 1.f }));
-    quadVert.push_back(Vertex({ s, -s, 0.f }, { 0.f, 0.f, 1.f }));
-    quadVert.push_back(Vertex({ -s, -s, 0.f }, { 0.f, 0.f, 1.f }));
-    quadVert.push_back(Vertex({ -s, s, 0.f }, { 0.f, 0.f, 1.f }));
+    quadVert.push_back(Vertex({ s, s, 0.f }, { 0.f, 0.f, 1.f }, { 1.f, 1.f }));
+    quadVert.push_back(Vertex({ s, -s, 0.f }, { 0.f, 0.f, 1.f }, { 1.f, 0.f }));
+    quadVert.push_back(Vertex({ -s, -s, 0.f }, { 0.f, 0.f, 1.f }, { 0.f, 0.f }));
+    quadVert.push_back(Vertex({ -s, s, 0.f }, { 0.f, 0.f, 1.f }, { 0.f, 1.f }));
 
     unsigned int indices[] =
     {
@@ -73,6 +75,8 @@ std::unique_ptr<Mesh> Mesh::CreateQuad(const unsigned int size)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)NULL); 
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, n));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tc));
     glBindVertexArray(0);
 
     std::unique_ptr<Mesh> mesh(new Mesh(VAO, _countof(indices)));

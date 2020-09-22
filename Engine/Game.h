@@ -13,7 +13,8 @@ private:
 public:
 	Game(const std::string& name, int width, int height);
 	std::shared_ptr<Window> win;
-	virtual int				Init();	
+	int						Init();	
+	virtual int				OnControlInit();
 	virtual int				OnLoad();
 	virtual void			OnUpdate(UpdateEvent& e);
 	virtual void			OnRender();
@@ -21,6 +22,9 @@ public:
 	virtual void			OnKeyReleased(KeyEvent& e);
 	virtual void			OnMouseMove(MouseMoveEvent& e);
 	virtual void			OnMouseClick(MouseClickEvent& e);
+	virtual void			OnControlPress(WPARAM wParam, LPARAM lParam);
+	virtual void			HandleMessage(UINT message, WPARAM wParam, LPARAM lParam);
+	
 protected:
 	
 };
