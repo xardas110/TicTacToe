@@ -18,7 +18,6 @@ void _vectorcall AIScripted::CalculatePriorityMap(std::vector<RowInfo> tInfo, co
 	const int drawTile = playerSide + aiSide - 3;
 	const int uselessTile = playerSide + playerSide + aiSide;
 	
-
 	const int diagonalSum = tiles[0][0] + tiles[1][1] + tiles[2][2];
 	const int r2Sum = tiles[2][0] + tiles[2][1] + tiles[2][2];
 

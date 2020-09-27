@@ -79,8 +79,9 @@ Board::TileState Board::SetTile(int x, int y, Player player)
 	if (gameState != GameState::OnGoing)
 		return TileState::NotYourTurn;
 	
-	if (IsTileTaken(x, y) == TileState::Taken)
-		return TileState::Taken;
+	auto tState = IsTileTaken(x, y);
+	if (tState != TileState::Open)
+		return tState;
 
 	std::cout << "Turn accepted " << y << " " << x <<  std::endl;
 	tiles[y][x] = player;
@@ -181,7 +182,7 @@ void Board::Draw(std::shared_ptr<Shader> shader, std::shared_ptr<Shader> shaderT
 void Board::Init()
 {
 	grid = Mesh::CreateGrid(gridLengthX, gridLengthY, gridSizeX, gridSizeY);
-	playerMesh[Player::PlayerO] = Mesh::CreateQuad();//64 circle vertex edges
+	playerMesh[Player::PlayerO] = Mesh::CreateQuad();
 	playerMesh[Player::PlayerX] = Mesh::CreateQuad();
 	playerTexture[Player::PlayerO] = Texture::LoadTextureFromFile("../Textures/O.png");
 	playerTexture[Player::PlayerX] = Texture::LoadTextureFromFile("../Textures/X.png");
@@ -208,6 +209,7 @@ Board::GameState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 	//priority map for AI
 	//row combinations
 	std::vector<RowInfo> tInfo;//2 instructions
+	//I can optimize this code better, but I was too lazy, I don't need to save this many positions and a vec space, just need 1 offset with the boards initial mem adress
 	RowInfo r0, r1, r2, r3, r4;
 	r0.r = vec3(tiles[pos.y][0], tiles[pos.y][1], tiles[pos.y][2]);
 	r1.r = vec3(tiles[0][pos.x], tiles[1][pos.x], tiles[2][pos.x]);
@@ -274,7 +276,10 @@ Board::GameState Board::CheckWinner(glm::vec<2, int> pos, Player player)
 	glm::vec<3, int> tilesSum = tiles[0] + tiles[1] + tiles[2];
 	auto const totalSum = tilesSum.x + tilesSum.y  + tilesSum.z;
 	if (totalSum == 4)
+	{ 
+		std::cout << "Game draw!" << std::endl;
 		return GameState::Finished;
+	}
 	if (auto AI = Ai.lock())
 		AI->CalculatePriorityMap(tInfo, tiles);
 	SetNextPlayerTurn(player);
