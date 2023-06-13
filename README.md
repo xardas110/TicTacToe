@@ -6,5 +6,5 @@ This project uses OGL.
 
 # Overview
 <div style='float: center'>
-  <img style='width: 1024px' src="/Images/Overview2.png"></img>
+  <img style='width: 1024px' src="/Images/Overview3.png"></img>
 </div>
