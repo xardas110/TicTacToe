@@ -95,9 +95,9 @@ void TicScene::OnRender()
 	glm::mat4 skyboxView = glm::mat3(view);//removing translation vector for skybox
 	glm::mat4 skyBoxVP = project * skyboxView;
 		
-	skyboxShader->Use();
-	skyboxShader->BindMat4("MVP", skyBoxVP);
-	skybox.Draw(skyboxShader);
+	//skyboxShader->Use();
+	//skyboxShader->BindMat4("MVP", skyBoxVP);
+	//skybox.Draw(skyboxShader);
 	primitiveTextureShader->Use();
 	primitiveTextureShader->BindVec3("camPos", camera.GetPosition());
 	primitiveMaterialShader->Use();
